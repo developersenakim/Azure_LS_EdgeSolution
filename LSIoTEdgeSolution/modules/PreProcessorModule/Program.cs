@@ -9,13 +9,34 @@ namespace PreProcessorModule
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using System.Collections.Generic;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+    using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
+    using System.Net;
+    using System.Diagnostics;
 
+    // disabling async warning as the SendSimulationData is an async method
+    // but we don't wait for it
+#pragma warning disable CS4014
     class Program
     {
         static int counter;
+        private static Stopwatch mywatch;
+        private static ModuleManager moduleManager;
+        // private static volatile DesiredPropertiesData desiredPropertiesData;
+        // private static volatile bool IsReset = false;
 
         static void Main(string[] args)
         {
+            mywatch = new Stopwatch();
+            mywatch.Start();
+
+            moduleManager = new ModuleManager();
+            moduleManager.Init();
+
+
+
             Init().Wait();
 
             // Wait until the app unloads or is cancelled
@@ -47,10 +68,59 @@ namespace PreProcessorModule
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
             await ioTHubModuleClient.OpenAsync();
-            Console.WriteLine("IoT Hub module client initialized.");
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,"IoT Hub module client initialized.");
 
-            // Register callback to be called when a message is received by the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
+            var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
+            var moduleTwinCollection = moduleTwin.Properties.Desired;
+            // as this runs in a loop we don't await
+            SendSimulationData(ioTHubModuleClient);
+        }
+
+        private static async Task SendSimulationData(ModuleClient deviceClient)
+        {
+            while (true)
+            {
+                try
+                {
+                    counter++;
+                    if (counter == 1)
+                    {
+                        // first time execution needs to reset the data factory
+                        // IsReset = true;
+                    }
+                    moduleManager.Process();
+                    string Modulemessage = moduleManager.m_ModuleMessageBody.Count + "number of module messagebody";
+                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, Modulemessage);
+
+                    if (moduleManager.m_ModuleMessageBody.Count > 0)
+                    {
+                        moduleManager.m_ModuleMessageBody.TrimExcess();
+                        ModuleMessageBody moduleMessageBody = moduleManager.m_ModuleMessageBody.Dequeue();
+
+                        var messageBody = LogBuilder.AssignTempMessageBody(moduleMessageBody.LineName, moduleMessageBody.Raw, moduleMessageBody.Cep);
+                        var messageString = JsonConvert.SerializeObject(messageBody);
+
+                        if (messageString != string.Empty)
+                        {
+                            var logstring = "@@@@@@@@@" + messageString + "";
+                            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logstring);
+                            var messageBytes = Encoding.UTF8.GetBytes(messageString);
+                            var message = new Message(messageBytes);
+                            message.ContentEncoding = "utf-8";
+                            message.ContentType = "application/json";
+
+                            await deviceClient.SendEventAsync("messageOutput", message);
+
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Unexpected Exception {ex.Message}");
+                    Console.WriteLine($"\t{ex.ToString()}");
+                }
+                await Task.Delay(TimeSpan.FromSeconds(5));
+            }
         }
 
         /// <summary>

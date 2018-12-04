@@ -57,7 +57,7 @@
           }
         },
         "modules": {
-          "tempSensor": {
+          "sql": {
             "version": "1.0",
             "type": "docker",
             "status": "running",
@@ -84,7 +84,7 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/* INTO $upstream",
+          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO $upstream",
           "sensorToPreProcessorModule": "FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/PreProcessorModule/inputs/input1\")"
         },
         "storeAndForwardConfiguration": {
