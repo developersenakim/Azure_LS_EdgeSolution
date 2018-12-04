@@ -57,14 +57,59 @@
           }
         },
         "modules": {
-          "sql": {
+          "grafana": {
             "version": "1.0",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
-              "createOptions": {}
+              "image": "grafana/grafana",
+              "createOptions": {
+                "HostConfig": {               
+                  "PortBindings": {
+                    "3000/tcp": [
+                      {
+                        "HostPort": "3000"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "sql": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "env": {
+              "ACCEPT_EULA": {
+                "value": "Y"
+              },
+              "SA_PASSWORD": {
+                "value": "Strong!Passw0rd"
+              }
+            },
+            "settings": {
+              "image": "mcr.microsoft.com/mssql/server:latest",
+              "createOptions": {
+                "HostConfig": {
+                  "Mounts": [
+                    {
+                      "Target": "/var/opt/mssql",
+                      "Source": "sqlVolume",
+                      "Type": "volume"
+                    }
+                  ],
+                  "PortBindings": {
+                    "1433/tcp": [
+                      {
+                        "HostPort": "1401"
+                      }
+                    ]
+                  }
+                }
+              }
             }
           },
           "PreProcessorModule": {
@@ -74,7 +119,7 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.PreProcessorModule}",
-              "createOptions": {}
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/vmuser01/Windows-Share:/app/data\",\"/home/vmuser01/Share:/app/documents\",\"/app/documents:/home/vmuser01/Share:\"]}}"
             }
           }
         }
@@ -84,8 +129,7 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO $upstream",
-          "sensorToPreProcessorModule": "FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/PreProcessorModule/inputs/input1\")"
+          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
