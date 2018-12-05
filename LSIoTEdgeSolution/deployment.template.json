@@ -56,62 +56,7 @@
             }
           }
         },
-        "modules": {
-          "grafana": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "grafana/grafana",
-              "createOptions": {
-                "HostConfig": {               
-                  "PortBindings": {
-                    "3000/tcp": [
-                      {
-                        "HostPort": "3000"
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "sql": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "env": {
-              "ACCEPT_EULA": {
-                "value": "Y"
-              },
-              "SA_PASSWORD": {
-                "value": "Strong!Passw0rd"
-              }
-            },
-            "settings": {
-              "image": "mcr.microsoft.com/mssql/server:latest",
-              "createOptions": {
-                "HostConfig": {
-                  "Mounts": [
-                    {
-                      "Target": "/var/opt/mssql",
-                      "Source": "sqlVolume",
-                      "Type": "volume"
-                    }
-                  ],
-                  "PortBindings": {
-                    "1433/tcp": [
-                      {
-                        "HostPort": "1401"
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          },
+        "modules": {       
           "PreProcessorModule": {
             "version": "1.0",
             "type": "docker",
@@ -119,7 +64,7 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.PreProcessorModule}",
-              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/root/vmuser01/mc:/app/data\",\"/root/vmuser01/documents:/app/documents\",\"/app/documents:/root/vmuser01/mc:\"]}}"
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/root/mc:/app/data\",\"/root/document:/app/documents\",\"/app/documents:/root/mc:\"]}}"
             }
           }
         }

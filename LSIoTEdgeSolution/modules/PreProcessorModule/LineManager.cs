@@ -58,8 +58,8 @@ namespace PreProcessorModule
             // m_LineName = p_directoryName;
             //reset variales, 
             m_linefolderLocation = p_shareFolderLocation + p_directoryName;
-            m_reportfolderlocation = m_linefolderLocation + "/Report";
-            m_aidatafolderlocation = m_linefolderLocation + "/AI Data";
+            m_reportfolderlocation = m_linefolderLocation + "/report";
+            m_aidatafolderlocation = m_linefolderLocation + "/aidata";
             m_ModuleMessageBody = new Queue<ModuleMessageBody>();
             m_alldateFolderInfo = new List<DateFolderInfo>();
 
