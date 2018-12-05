@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-
 using Newtonsoft.Json;
 using System.Linq;
 
@@ -14,15 +13,21 @@ namespace PreProcessorModule
     /// text for class LineStatus
     public class LineStatus
     {
-        public LineStatus()
+        public LineStatus(string p_apsfolderName, string p_cepfolderName, string p_rawfolderName, string p_shareFolderLocation, string p_directoryName, int i, string p_reportfolderName, string p_aifolderName)
         {
             m_LineName = "";
             m_IsThereLineFolder = false;
             m_IsThereReportFolder = false;
             m_IsThereCurrentDirectoryDateFolder = false;
             m_IsThereAIFolder = false;
+            m_apsfolderName = p_apsfolderName;
+            m_cepfolderName = p_cepfolderName;
+            m_rawfolderName = p_rawfolderName;
         }
         public string m_LineName { get; set; }
+        public string m_apsfolderName { get; set; }
+        public string m_cepfolderName { get; set; }
+        public string m_rawfolderName { get; set; }
         public bool m_IsThereLineFolder { get; set; }
         public bool m_IsThereReportFolder { get; set; }
         public bool m_IsThereCurrentDirectoryDateFolder { get; set; }
@@ -30,8 +35,8 @@ namespace PreProcessorModule
         public string m_linefolderLocation { get; set; } // line folder location
         public string m_reportfolderlocation { get; set; } // report folder location
         public string m_aidatafolderlocation { get; set; } // AI folder location
-        public DateTime m_currentworkingDate { get; set; } // AI folder location
-        public List<DateFolderInfo> m_alldateFolderInfo { get; set; }
+        public DateTime m_previousworkingDate { get; set; } // AI folder location
+        public DateFolderInfo m_currentdateFolderInfo { get; set; }
         //  public Queue<BadProductInfo> m_badProductsInfo { get; set; }
         public Queue<ModuleMessageBody> m_ModuleMessageBody { get; set; }
         public enum RestultFileType
@@ -51,21 +56,18 @@ namespace PreProcessorModule
         ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
         ///* @return: None 
         ///</summary>
-        public void AssignLineStatus(string p_shareFolderLocation, string p_directoryName, int i)
+        public int AssignLineStatus(string p_shareFolderLocation, string p_directoryName, int i, string p_reportfolderName, string p_aifolderName)
         {
             int Linenumber = i + 2;
             m_LineName = "MC" + Linenumber + "LINE";
             // m_LineName = p_directoryName;
             //reset variales, 
             m_linefolderLocation = p_shareFolderLocation + p_directoryName;
-            m_reportfolderlocation = m_linefolderLocation + "/report";
-            m_aidatafolderlocation = m_linefolderLocation + "/aidata";
+
+            m_reportfolderlocation = m_linefolderLocation + p_reportfolderName;//"/report";
+            m_aidatafolderlocation = m_linefolderLocation + p_aifolderName;//'"/aidata";
             m_ModuleMessageBody = new Queue<ModuleMessageBody>();
-            m_alldateFolderInfo = new List<DateFolderInfo>();
-
-
-
-
+            m_currentdateFolderInfo = new DateFolderInfo();
             m_IsThereLineFolder = DirectoryReader.IsDirectoryExistInThefolder(m_linefolderLocation);
             if (m_IsThereLineFolder == true)
             {
@@ -82,6 +84,7 @@ namespace PreProcessorModule
                     LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, m_LineName + ": ReportFolder or AIFolder Is Not Detected.");
                 }
             }
+            return Linenumber;
         }
         ///<summary>
         ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
@@ -90,57 +93,17 @@ namespace PreProcessorModule
         ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
         ///* @return: None 
         ///</summary>
-        public ModuleMessageBody ProcessSingleDateFolderInfo()
+        public Queue<ModuleMessageBody> ProcessSingleDateFolderInfo()
         {
-            ModuleMessageBody module = new ModuleMessageBody();
+           // ModuleMessageBody module = new ModuleMessageBody();
+            m_currentdateFolderInfo = SetSingleDateFolderInfo();
+            SetbadProductsInfoUnderDateFolder(m_currentdateFolderInfo);
+            
 
-
-            SetAllDateFolderInfo(); // if data folder is already assigned check data for the same data
-            if (m_alldateFolderInfo != null)
-            {
-                m_alldateFolderInfo.TrimExcess();
-                for (int i = 0; i < m_alldateFolderInfo.Count; i++)
-                {
-                    if (m_alldateFolderInfo[i].isProcessingComplete == false)
-                    {
-                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_alldateFolderInfo[i].WorkingDate);
-                        SetbadProductsInfoUnderDateFolder(m_alldateFolderInfo[i]);
-                        ProcessBadReportsUnderSingleDates(m_alldateFolderInfo[i]);
-                        m_alldateFolderInfo[i].isProcessingComplete = true;
-                    }
-                }
-            }
-            return module;
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_currentdateFolderInfo.DateFolderLocationUnderReport); 
+            return ProcessBadReportsUnderSingleDates(m_currentdateFolderInfo);
         }
 
-        ///<summary>
-        ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
-        /// This function proves that those specific folders exist.!-- 
-        ///* @author: Sena.kim
-        ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
-        ///* @return: None 
-        ///</summary>
-        public Queue<ModuleMessageBody> ProcessMultipleDateFolderInfo()
-        {
-
-
-            SetAllDateFolderInfo(); // if data folder is already assigned check data for the same data
-            if (m_alldateFolderInfo != null)
-            {
-                m_alldateFolderInfo.TrimExcess();
-                for (int i = 0; i < m_alldateFolderInfo.Count; i++)
-                {
-                    if (m_alldateFolderInfo[i].isProcessingComplete == false)
-                    {
-                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_alldateFolderInfo[i].WorkingDate);
-                        SetbadProductsInfoUnderDateFolder(m_alldateFolderInfo[i]);
-                        ProcessBadReportsUnderSingleDates(m_alldateFolderInfo[i]);
-                        m_alldateFolderInfo[i].isProcessingComplete = true;
-                    }
-                }
-            }
-            return m_ModuleMessageBody;
-        }
 
         ///<summary>
         ///* Function: Setting today's date folder.!--  
@@ -150,76 +113,23 @@ namespace PreProcessorModule
         ///* @return: None 
         ///</summary>
 
-        public DateFolderInfo SetSingleDateFolderInfo()
+        private DateFolderInfo SetSingleDateFolderInfo()
         {
             string dateFolderLocation = "";
-            DateTime currentKoreaTime = LogBuilder.GetKoreanFormatTime();//GetToday's date
-            dateFolderLocation = DirectoryReader.ParseDatetimeToDirectoryStyle(m_reportfolderlocation, currentKoreaTime, "yyyyMMdd");
-            DateFolderInfo todayDateFolderInfo = new DateFolderInfo() { WorkingDate = m_currentworkingDate };
-            return todayDateFolderInfo;
-        }
-        ///<summary>
-        ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
-        /// This function proves that those specific folders exist.!-- 
-        ///* @author: Sena.kim
-        ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
-        ///* @return: None 
-        ///</summary>
-        public List<DateFolderInfo> SetAllDateFolderInfo()
-        {
-            if (m_IsThereReportFolder == true)
+            DateTime currentworkingDate = LogBuilder.GetKoreanFormatTime();//GetToday's date
+            dateFolderLocation = DirectoryReader.ParseDatetimeToDirectoryStyle(m_reportfolderlocation, currentworkingDate, "yyyyMMdd");
+            DateFolderInfo todayDateFolderInfo = (new DateFolderInfo()
             {
-                string dateFolderLocation = "";
-                DateTime currentKoreaTime = LogBuilder.GetKoreanFormatTime();//GetToday's date
-                DirectoryInfo[] reportFolderDir = DirectoryReader.Readfromfolder(m_reportfolderlocation); // Get Dates folder inside report folder
-
-                foreach (var dateFolder in reportFolderDir)
-                {
-                    string sDateForderUnderReportFolder = dateFolder.Name.ToString();
-                    DateTime dtReportFolder = LogBuilder.ParseStringToGetDateTime(sDateForderUnderReportFolder, "yyyyMMdd");
-
-                    m_currentworkingDate = LogBuilder.CompareTwoDateTimeToGetDateTimeToWork(dtReportFolder, currentKoreaTime);
-                    dateFolderLocation = DirectoryReader.ParseDatetimeToDirectoryStyle(m_reportfolderlocation, m_currentworkingDate, "yyyyMMdd");
-                    if (m_alldateFolderInfo != null)// if data folder is already assigned check data for the same data
-                    {
-                        if (m_alldateFolderInfo.Contains(new DateFolderInfo { WorkingDate = m_currentworkingDate }) == false)// if data contains current data
-                        {
-                            AssigndateFolderInfo(dateFolderLocation);
-                        }
-                    }
-                    else
-                    { // if data is null just assign them. 
-
-                        AssigndateFolderInfo(dateFolderLocation);
-                    }
-                }
-                m_alldateFolderInfo.TrimExcess();
-                m_alldateFolderInfo.OrderBy(m_alldateFolderInfo => m_alldateFolderInfo.WorkingDate);// sort list by date
-
-            }
-            return m_alldateFolderInfo;
-        }
-        ///<summary>
-        ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
-        /// This function proves that those specific folders exist.!-- 
-        ///* @author: Sena.kim
-        ///* @parameter: fileType ( "*.csv") folder path
-        ///* @return: None 
-        ///</summary>
-        public void AssigndateFolderInfo(string p_dateFolderLocation)
-        {
-            m_alldateFolderInfo.Add(new DateFolderInfo()//assign only if it is new data.
-            {
-                WorkingDate = m_currentworkingDate,
-                DateFolderLocationUnderReport = p_dateFolderLocation,
-                APSFolderLocation = GetApsCepRawLocation("/APSFile", RestultFileType.APS),
-                CepFolderLocation = GetApsCepRawLocation("/CepFile", RestultFileType.CEP),
-                RawDataFolderLocation = GetApsCepRawLocation("/RawData", RestultFileType.RAW),
+                WorkingDate = currentworkingDate,
+                DateFolderLocationUnderReport = dateFolderLocation,
+                APSFolderLocation = this.GetApsCepRawLocation(m_apsfolderName, RestultFileType.APS, currentworkingDate),
+                CepFolderLocation = this.GetApsCepRawLocation(m_cepfolderName, RestultFileType.CEP, currentworkingDate),
+                RawDataFolderLocation = this.GetApsCepRawLocation(m_rawfolderName, RestultFileType.RAW, currentworkingDate),
                 BadProductsWithErrors = new Queue<BadProductInfo>(),
                 BadProductsToPass = new Queue<BadProductInfo>(),
                 isProcessingComplete = false,
             });
-
+            return todayDateFolderInfo;
         }
         ///<summary>
         ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
@@ -232,39 +142,41 @@ namespace PreProcessorModule
         {
             Queue<BadProductInfo> badProductsInfo = new Queue<BadProductInfo>();
 
-            FileInfo[] di = new FileInfo[1];
+
             if (m_IsThereReportFolder == true && m_IsThereAIFolder == true)
             {
                 //does directory have csv files? save csv files
-                di = DirectoryReader.Readfromfolder("*.csv", p_datefolderInfo.DateFolderLocationUnderReport);
+                FileInfo[] di = DirectoryReader.Readfromfolder("*.csv", p_datefolderInfo.DateFolderLocationUnderReport);
+
 
                 for (int i = 0; i < di.Length; i++)
                 {
-                    int badcount = 0;
-                    string[] allLines = DirectoryReader.ReadAllLinesOfAFile(di[i].Name, p_datefolderInfo.DateFolderLocationUnderReport);//File.ReadAllLines(fileLocation);
-                    var csvLinesData = allLines.Skip(1);
-                    var varbadProductsInfo = (from line in csvLinesData
-                                              let data = line.Split(",")
-                                              select new
-                                              {
-                                                  Date = data[0],
-                                                  Model = data[1],
-                                                  BarCode = data[2],
-                                                  Result = data[3]
-                                              })
-                                     .Where(data => data.Result == "NG").ToList();
-
-                    // end of linq
-
-
-                    foreach (var s in varbadProductsInfo)
+                    if (di[i] != null)
                     {
-                        badcount++;
-                        badProductsInfo.Enqueue(new BadProductInfo() { Date = s.Date, Model = s.Model, BarCode = s.BarCode, Result = s.Result });
+                        int badcount = 0;
+                        string[] allLines = DirectoryReader.ReadAllLinesOfAFile(di[i].Name, p_datefolderInfo.DateFolderLocationUnderReport);//File.ReadAllLines(fileLocation);
+                        var csvLinesData = allLines.Skip(1);
+                        var varbadProductsInfo = (from line in csvLinesData
+                                                  let data = line.Split(",")
+                                                  select new
+                                                  {
+                                                      Date = data[0],
+                                                      Model = data[1],
+                                                      BarCode = data[2],
+                                                      Result = data[3]
+                                                  })
+                                         .Where(data => data.Result == "NG").ToList(); // end of linq
+                        foreach (var s in varbadProductsInfo)
+                        {
+                            badcount++;
+                            badProductsInfo.Enqueue(new BadProductInfo() { Date = s.Date, Model = s.Model, BarCode = s.BarCode, Result = s.Result });
+                        }
+                        // m_badProductsInfo.TrimExcess();
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Reading " + p_datefolderInfo.WorkingDate + " " + di[i].Name + "....." + "No. of BadProducts #" + badcount);
                     }
-                    // m_badProductsInfo.TrimExcess();
-                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Reading " + p_datefolderInfo.WorkingDate + " " + di[i].Name + "....." + "No. of BadProducts #" + badcount);
                 }// end of for loop
+
+
             } // end of  if (IsThereReportFolder == true && IsThereAIFolder == true)
             int dataError = 0;
             foreach (var s in badProductsInfo)
@@ -273,7 +185,7 @@ namespace PreProcessorModule
                 if (IsNotError == true)
                 {
                     p_datefolderInfo.BadProductsToPass.Enqueue(new BadProductInfo() { Date = s.Date, Model = s.Model, BarCode = s.BarCode, Result = s.Result });
-                    //       LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, s.Date + "   " + s.Model + "   " + s.BarCode + "   " + s.Result);
+                    //LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, s.Date + "   " + s.Model + "   " + s.BarCode + "   " + s.Result);
                 }
                 else
                 {
@@ -282,23 +194,26 @@ namespace PreProcessorModule
                 }
             }
             // m_Linestatus[1].m_badProductsInfo.TrimExcess();
-            string dateformat = LogBuilder.ParseDateTimeToString(m_currentworkingDate, "yyyy-MM-dd");
+            string dateformat = LogBuilder.ParseDateTimeToString(p_datefolderInfo.WorkingDate, "yyyy-MM-dd");
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Folder :" + dateformat + " Total bad products :" + badProductsInfo.Count + " DataError :" + dataError);
 
         }// end of  public SetDecisionResultUnderReportFolder(string p_dateFolderLocation)
 
 
 
-        public void ProcessBadReportsUnderSingleDates(DateFolderInfo p_datefolderInfo)
+        public Queue<ModuleMessageBody> ProcessBadReportsUnderSingleDates(DateFolderInfo p_datefolderInfo)
         {
             if (p_datefolderInfo.BadProductsToPass != null)
             {
+                p_datefolderInfo.BadProductsToPass.TrimExcess();
                 for (int i = 0; i < p_datefolderInfo.BadProductsToPass.Count; i++)
                 {
+                    BadProductInfo singlebadInfo = p_datefolderInfo.BadProductsToPass.Dequeue();
+                    p_datefolderInfo.BadProductsToPass.TrimExcess();
                     string fileApsstring = String.Empty, fileCepstring = String.Empty, fileRawstring = String.Empty;
-                    FileInfo[] apsFi = Readfromfolder(p_datefolderInfo.BadProductsToPass.Dequeue().BarCode, "*.csv", p_datefolderInfo.APSFolderLocation);
-                    FileInfo[] cepFi = Readfromfolder(p_datefolderInfo.BadProductsToPass.Dequeue().BarCode, "*.csv", p_datefolderInfo.CepFolderLocation);
-                    FileInfo[] rawFi = Readfromfolder(p_datefolderInfo.BadProductsToPass.Dequeue().BarCode, "*.csv", p_datefolderInfo.RawDataFolderLocation);
+                    FileInfo[] apsFi = Readfromfolder(singlebadInfo.BarCode, "*.csv", p_datefolderInfo.APSFolderLocation);
+                    FileInfo[] cepFi = Readfromfolder(singlebadInfo.BarCode, "*.csv", p_datefolderInfo.CepFolderLocation);
+                    FileInfo[] rawFi = Readfromfolder(singlebadInfo.BarCode, "*.csv", p_datefolderInfo.RawDataFolderLocation);
 
                     if (apsFi.Count() > 0)
                     {
@@ -316,7 +231,7 @@ namespace PreProcessorModule
                     m_ModuleMessageBody.Enqueue(new ModuleMessageBody() { LineName = m_LineName, Raw = fileRawstring, Cep = fileCepstring, Aps = fileApsstring });
                 }
             }
-
+            return m_ModuleMessageBody;
         }
         ///<summary>
         ///* Function: function to read from content from a file using splitstring to detect the line to get a string
@@ -356,38 +271,40 @@ namespace PreProcessorModule
         ///* @parameter: fileType ( "*.csv") folder path
         ///* @return: None 
         ///</summary>
-
-
-        public string GetApsCepRawLocation(string fileType, RestultFileType resultType)
+        private string GetApsCepRawLocation(string p_fileType, RestultFileType p_resultType, DateTime p_workingdate)
         {
-            string workingfolder = DirectoryReader.ParseDatetimeToDirectoryStyle(m_aidatafolderlocation, m_currentworkingDate, "yyyy-MM-dd");
-            workingfolder = workingfolder + fileType;
-            bool isdirectoryExist = false;
-            if (DirectoryReader.IsDirectoryEmpty(workingfolder) == false)
+            string workingfolder = string.Empty;
+            if (m_currentdateFolderInfo != null)
             {
-                isdirectoryExist = true;
+                workingfolder = DirectoryReader.ParseDatetimeToDirectoryStyle(m_aidatafolderlocation, p_workingdate, "yyyy-MM-dd");
+                workingfolder = workingfolder + p_fileType;
+                bool isdirectoryExist = false;
+                if (DirectoryReader.IsDirectoryEmpty(workingfolder) == false)
+                {
+                    isdirectoryExist = true;
+                }
+
+                switch (p_resultType)
+                {
+                    case RestultFileType.APS:
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Is There APS Folder " + isdirectoryExist + " @ " + workingfolder);
+                        break;
+
+                    case RestultFileType.CEP:
+
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Is There CEP Folder " + isdirectoryExist + " @ " + workingfolder);
+                        break;
+                    case RestultFileType.RAW:
+
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Is There RAW Folder " + isdirectoryExist + " @ " + workingfolder);
+                        break;
+                    default:
+                        break;
+
+                }
+
             }
 
-            switch (resultType)
-            {
-                case RestultFileType.APS:
-
-
-                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "APS Folder " + isdirectoryExist + "@" + workingfolder);
-                    break;
-
-                case RestultFileType.CEP:
-
-                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "CEP Folder " + isdirectoryExist + "@" + workingfolder);
-                    break;
-                case RestultFileType.RAW:
-
-                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "RAW Folder " + isdirectoryExist + "@" + workingfolder);
-                    break;
-                default:
-                    break;
-
-            }
             return workingfolder;
 
         }

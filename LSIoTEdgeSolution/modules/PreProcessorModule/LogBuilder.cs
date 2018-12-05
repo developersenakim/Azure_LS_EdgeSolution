@@ -17,6 +17,24 @@ namespace PreProcessorModule
             Warning,
             Error
         }
+
+          static public void LogWrite(MessageStatus messageStatus, string logMessage)
+        {
+            //WindowPath
+            string path = @"C:\Users\sena.kim\Documents\Projects\LS산전\Azure_LS_EdgeSolution\LSIoTEdgeSolution\config\";
+            
+           // string path ="/app/documents/";
+            try
+            {
+                using (StreamWriter w = File.AppendText(path+"log.txt"))
+                {
+                    WriteOnConsole(logMessage, messageStatus, w);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
         //public Format of YYYYMMDD
         static public DateTime ParseStringToGetDateTime(string dateString, string dateFormat)
         {
@@ -124,20 +142,7 @@ namespace PreProcessorModule
             }
         }
 
-        static public void LogWrite(MessageStatus messageStatus, string logMessage)
-        {
-            string path ="/app/documents/";
-            try
-            {
-                using (StreamWriter w = File.AppendText(path+"log.txt"))
-                {
-                    WriteOnConsole(logMessage, messageStatus, w);
-                }
-            }
-            catch (Exception)
-            {
-            }
-        }
+      
         static private void Log(string logMessage, TextWriter txtWriter, string logType)
         {
             try

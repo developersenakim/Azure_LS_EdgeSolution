@@ -19,8 +19,13 @@ namespace PreProcessorModule
     using System.Diagnostics;
 
     /// text for class LineStatus
+
+        // disabling async warning as the SendSimulationData is an async method
+    // but we don't wait for it
+//#pragma warning disable CS4014
     public class ConnectionManager
     {
+        public string previousmessagetosend;
 
 
         /// <summary>
@@ -54,7 +59,7 @@ namespace PreProcessorModule
         }
 
 
-        public static async Task SendData(ModuleClient deviceClient)
+        public static async Task SendData(ModuleClient deviceClient, string messageToSend)
         {
             int count = 0;
             while (true)
