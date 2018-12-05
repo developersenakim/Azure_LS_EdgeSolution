@@ -83,6 +83,35 @@ namespace PreProcessorModule
                 }
             }
         }
+        ///<summary>
+        ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
+        /// This function proves that those specific folders exist.!-- 
+        ///* @author: Sena.kim
+        ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
+        ///* @return: None 
+        ///</summary>
+        public ModuleMessageBody ProcessSingleDateFolderInfo()
+        {
+            ModuleMessageBody module = new ModuleMessageBody();
+
+
+            SetAllDateFolderInfo(); // if data folder is already assigned check data for the same data
+            if (m_alldateFolderInfo != null)
+            {
+                m_alldateFolderInfo.TrimExcess();
+                for (int i = 0; i < m_alldateFolderInfo.Count; i++)
+                {
+                    if (m_alldateFolderInfo[i].isProcessingComplete == false)
+                    {
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_alldateFolderInfo[i].WorkingDate);
+                        SetbadProductsInfoUnderDateFolder(m_alldateFolderInfo[i]);
+                        ProcessBadReportsUnderSingleDates(m_alldateFolderInfo[i]);
+                        m_alldateFolderInfo[i].isProcessingComplete = true;
+                    }
+                }
+            }
+            return module;
+        }
 
         ///<summary>
         ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
@@ -91,7 +120,7 @@ namespace PreProcessorModule
         ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
         ///* @return: None 
         ///</summary>
-        public Queue<ModuleMessageBody> ProcessDateFolderInfo()
+        public Queue<ModuleMessageBody> ProcessMultipleDateFolderInfo()
         {
 
 

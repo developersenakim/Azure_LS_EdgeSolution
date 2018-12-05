@@ -88,7 +88,7 @@ namespace PreProcessorModule
         {
             for (int i = 0; i < m_numberOfLines; i++)// Access Each line folder. 
             {
-                Queue<ModuleMessageBody> tempMessageBody = m_Linestatus[i].ProcessDateFolderInfo();
+                Queue<ModuleMessageBody> tempMessageBody = m_Linestatus[i].ProcessMultipleDateFolderInfo();
                 tempMessageBody.TrimExcess();
                 if (tempMessageBody.Count() > 0)
                 {
