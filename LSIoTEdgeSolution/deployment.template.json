@@ -119,7 +119,7 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.PreProcessorModule}",
-              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/vmuser01/Windows-Share:/app/data\",\"/home/vmuser01/Share:/app/documents\",\"/app/documents:/home/vmuser01/Share:\"]}}"
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/root/vmuser01/mc:/app/data\",\"/root/vmuser01/documents:/app/documents\",\"/app/documents:/root/vmuser01/mc:\"]}}"
             }
           }
         }
