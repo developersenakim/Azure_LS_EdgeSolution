@@ -17,12 +17,16 @@ namespace PreProcessorModule
         public string Raw { get; set; }
         [JsonProperty("cep")]
         public string Cep; //True False Unkown
- 
+
     }
     public class ModuleMessageBody
     {
         [JsonProperty("line")]
         public string LineName { get; set; }
+
+        [JsonProperty("badproductinfo")]
+        public BadProductInfo BadProductInfo { get; set; }
+
         [JsonProperty("raw")]
         public string Raw { get; set; }
         [JsonProperty("cep")]
@@ -37,7 +41,7 @@ namespace PreProcessorModule
         public int VerifiyingID;
         public DateTime WorkingDate { get; set; }
         public int ToalBadProductsNumbers { get; set; }
-        public Queue<BadProductInfo> BadProductsWithErrors { get; set; }
+        // public Queue<BadProductInfo> BadProductsWithErrors { get; set; }
         public Queue<BadProductInfo> BadProductsToPass { get; set; }
         public string DateFolderLocationUnderReport { get; set; }
         public string APSFolderLocation { get; set; }
@@ -69,9 +73,7 @@ namespace PreProcessorModule
         // Should also override == and != operators.
     }
 
-
-
-
+// Bad product is without empty string in barcode. 
     public class BadProductInfo //: IEquatable<Part>
     {
         public string Date { get; set; }

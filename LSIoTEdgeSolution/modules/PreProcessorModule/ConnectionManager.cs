@@ -20,9 +20,9 @@ namespace PreProcessorModule
 
     /// text for class LineStatus
 
-        // disabling async warning as the SendSimulationData is an async method
+    // disabling async warning as the SendSimulationData is an async method
     // but we don't wait for it
-//#pragma warning disable CS4014
+    //#pragma warning disable CS4014
     public class ConnectionManager
     {
         public string previousmessagetosend;
@@ -61,35 +61,29 @@ namespace PreProcessorModule
 
         public static async Task SendData(ModuleClient deviceClient, string messageToSend)
         {
-            int count = 0;
-            while (true)
+            try
             {
-                count++;
-                try
-                {
-                    //var messageBody = LogBuilder.AssignTempMessageBody(moduleMessageBody.LineName, moduleMessageBody.Raw, moduleMessageBody.Cep);
-                    //   var messageString = JsonConvert.SerializeObject(messageBody);
-                    var messageString = "this sends message" + count;
+                var messageString = messageToSend;
 
-                    if (messageString != string.Empty)
-                    {
-                        var logstring = "@@@@@@@@@" + messageString + "";
-                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logstring);
-                        var messageBytes = Encoding.UTF8.GetBytes(messageString);
-                        var message = new Message(messageBytes);
-                        message.ContentEncoding = "utf-8";
-                        message.ContentType = "application/json";
-
-                        await deviceClient.SendEventAsync("messageOutput", message);
-                    }
-                }
-                catch (Exception ex)
+                if (messageString != string.Empty)
                 {
-                    Console.WriteLine($"[ERROR] Unexpected Exception {ex.Message}");
-                    Console.WriteLine($"\t{ex.ToString()}");
+                    var logstring = "@@@@@@@@@" + messageString + "";
+                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logstring);
+                    var messageBytes = Encoding.UTF8.GetBytes(messageString);
+                    var message = new Message(messageBytes);
+                    message.ContentEncoding = "utf-8";
+                    message.ContentType = "application/json";
+
+                    await deviceClient.SendEventAsync("messageOutput", message);
                 }
-                await Task.Delay(TimeSpan.FromSeconds(5));
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Unexpected Exception {ex.Message}");
+                Console.WriteLine($"\t{ex.ToString()}");
+            }
+            // await Task.Delay(TimeSpan.FromSeconds(5));
+
 
         }
 
@@ -100,7 +94,7 @@ namespace PreProcessorModule
         /// </summary>
         static async Task<MessageResponse> PipeMessage(Message message, object userContext)
         {
-          //  int counterValue = Interlocked.Increment(ref counter);
+            //  int counterValue = Interlocked.Increment(ref counter);
 
             var moduleClient = userContext as ModuleClient;
             if (moduleClient == null)
@@ -110,7 +104,7 @@ namespace PreProcessorModule
 
             byte[] messageBytes = message.GetBytes();
             string messageString = Encoding.UTF8.GetString(messageBytes);
-         //   Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
+            //   Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
 
             if (!string.IsNullOrEmpty(messageString))
             {

@@ -16,26 +16,34 @@ using System.Diagnostics;
 
 //#pragma warning disable CS4014
 
-#pragma warning disable CS4014
+//#pragma warning disable CS4014
 namespace PreProcessorModule
 {
     class Program
     {
         private static Stopwatch stopwatch;
+        private static SQLClass sqlclass;
+        private static ModuleManager moduleManager;
+        private static Environment currentEnvironmet;
 
         private enum Environment
         {
             productionOnlinux,
-            testOnWindow,
+            testOnWindow, pri
         }
+
 
         static void Main(string[] args)
         {
-            Environment currentEnvironmet = Environment.testOnWindow;
-            ModuleManager moduleManager = new ModuleManager("");
+
 
             stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            int count = 0;
+            string logmessage = string.Empty;
+            currentEnvironmet = Environment.testOnWindow;
+            moduleManager = new ModuleManager("");
 
             if (currentEnvironmet == Environment.productionOnlinux)
             {
@@ -49,33 +57,36 @@ namespace PreProcessorModule
 
             moduleManager.Init();
 
-
-
-            //loop this
-            moduleManager.ProcessAssignModuleMessageBody();
-
-            for (int i = 0; i <= moduleManager.m_ModuleMessageBody.Count; i++)
-            {
-                ModuleMessageBody tempModulemessageBody = moduleManager.m_ModuleMessageBody.Dequeue();
-                var messageBody = LogBuilder.AssignTempMessageBody(tempModulemessageBody.LineName, tempModulemessageBody.Raw, tempModulemessageBody.Cep);
-                var messageString = JsonConvert.SerializeObject(messageBody);
-
-                if (currentEnvironmet == Environment.productionOnlinux)
-                {
-                   // ConnectionManager.SendData(moduleclient, messageString).Wait();
-                }
-                else if (currentEnvironmet == Environment.testOnWindow)
-                {
-                   LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,messageString);
-                }
-            }
-
-            SQLClass sqlclass = new SQLClass(moduleManager.GetsqlConnectionString());
+            sqlclass = new SQLClass(moduleManager.GetsqlConnectionString());
             sqlclass.CheckSqlConnection();
+            CreateDBAndNGTable();
+
+            ////////////////////////////////////////// Initialization Complete ////////////////////////////
+            logmessage = "Initialization complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}"; //local test : {00:00:00:38}
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
 
 
 
+            while (count < 1)//true
+            {
+                count++;
+                Process(moduleManager, currentEnvironmet);
 
+                ////////////////////////////////////////// Process Complete ////////////////////////////
+                sqlclass.CloseSQL();// only print messages that contains raw cep aps
+                stopwatch.Stop();  // Stop
+                if (count == 1)
+                {// Write hours, minutes , seconds , milliseconds/.
+                    logmessage = "All Process Complete For the First Time : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
+                }
+                else
+                {
+                    logmessage = "Process Complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
+                }
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Resetting watch...");
+                stopwatch.Reset();
+            }
 
             ////////////Process            
             // ConnectionManager.SendData(moduleclient).Wait();
@@ -86,7 +97,60 @@ namespace PreProcessorModule
             // AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
             // Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
             // ConnectionManager.WhenCancelled(cts.Token).Wait();
+        }
+
+        static void CreateDBAndNGTable()
+        {
+            string dbname = "LS_IoTEDGE";
+            string tablename = "T_NG"; // NG_TABLE          
+
+            string dbfilepath = string.Empty;
+            if (currentEnvironmet == Environment.productionOnlinux)
+            {
+                dbfilepath = "'/var/opt/mssql/lsiotedge.mdf'";
+            }
+            else if (currentEnvironmet == Environment.testOnWindow)
+            {
+                dbfilepath = @"'C:\LSIoTEdgeSolution\config\lsiotedge.mdf'";
+            }
+            sqlclass.CreateDBInSQL(dbname, dbfilepath);
+            sqlclass.CreateTableInSQL(dbname, tablename, "(LINE varchar(50), 시험일자 varchar(50), Model varchar(50), BarCode varchar(50), 재판정결과 varchar(50), CREATEDT datetime, RAWLocation varchar(250), CEPLocation varchar(250), APSLocation varchar(250))");
+            sqlclass.SetSqlNameAndTable(dbname, tablename);
 
         }
+
+
+        static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironmet)
+        {            //loop this
+            p_moduleManager.ProcessToAssignModuleMessageBody();
+            int tempMax = moduleManager.m_totalMessageBodiesOfAllLines.Count;
+            if (p_moduleManager.m_totalMessageBodiesOfAllLines.Count > 0)
+            {
+                for (int i = 0; i < tempMax; i++)
+                {
+                    ModuleMessageBody temp = p_moduleManager.m_totalMessageBodiesOfAllLines.Dequeue();
+                    var messageBody = LogBuilder.AssignTempMessageBody(temp.LineName, temp.Raw, temp.Cep);
+                    var messageString = JsonConvert.SerializeObject(messageBody);
+
+                    if (sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
+                    {
+                        //Chek if the data already exist 
+
+                        sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, "", temp.Raw, temp.Cep, temp.Aps);
+
+                        if (p_currentEnvironmet == Environment.productionOnlinux)
+                        {
+                            //  ConnectionManager.SendData(moduleclient, messageString).Wait();
+                        }
+                        else if (p_currentEnvironmet == Environment.testOnWindow)
+                        {
+                            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, messageString);
+                        }
+
+                    }
+
+                }//end of for loop
+            }
+        }// end of Process void
     }
 }

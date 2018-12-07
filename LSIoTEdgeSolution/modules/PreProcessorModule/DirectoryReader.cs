@@ -39,7 +39,7 @@ namespace PreProcessorModule
         /// </summary>
         static public bool IsDirectoryExistInThefolder(string p_folderpath)
         {
-            
+
             bool isExist = false;
 
             if (System.IO.Directory.Exists(p_folderpath))
@@ -92,12 +92,29 @@ namespace PreProcessorModule
         ///</summary>
         static public string[] ReadAllLinesOfAFile(string p_filename, string p_folderlocation)
         {
-            string[] allLines;
+            int currentRetry = 0;
+            string[] allLines = new string[0];
             string s_fileName = p_filename;
             string fileLocation = p_folderlocation + "/" + s_fileName;
 
             // reading csvs, skips the first raw. 
-            return allLines = File.ReadAllLines(fileLocation);
+            try
+            {
+                allLines = File.ReadAllLines(fileLocation);
+            }
+            catch
+            {             
+                Thread.Sleep(20);
+                currentRetry++;               
+                if (currentRetry > 10)
+                {
+                    // If this isn't a transient error or we shouldn't retry, 
+                    // rethrow the exception.
+                    throw;
+                }
+
+            }
+            return allLines;
         }
 
         ///<summary>
@@ -115,6 +132,7 @@ namespace PreProcessorModule
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "start Reading" + p_filepath);        // reading csvs, skips the first raw. 
             }
             return allLines = File.ReadAllLines(p_filepath);
+
 
         }
         ///<summary>

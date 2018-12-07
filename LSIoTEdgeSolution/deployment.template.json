@@ -56,7 +56,28 @@
             }
           }
         },
-        "modules": {       
+        "modules": {
+          "grafana": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "grafana/grafana:latest",
+              "createOptions": "{\"Env\": [],\"HostConfig\": {\"Mounts\": [{\"Target\": \"/var/opt/grafana\",\"Source\": \"grafana-storage\",\"Type\": \"volume\"}],\"PortBindings\": {\"3000/tcp\": [{\"HostPort\": \"3000\"}]}}}"
+            }       
+          },       
+         
+        "sql": {
+          "version": "1.0",
+          "type": "docker",
+          "status": "running",
+          "restartPolicy": "always",
+          "settings": {
+            "image": "mcr.microsoft.com/mssql/server:latest",
+            "createOptions": "{\"Env\": [\"ACCEPT_EULA=Y\",\"MSSQL_SA_PASSWORD=Strong!Passw0rd\"],\"HostConfig\": {\"Mounts\": [{\"Target\": \"/var/opt/mssql\",\"Source\": \"sqlVolume\",\"Type\": \"volume\"}],\"PortBindings\": {\"1433/tcp\": [{\"HostPort\": \"1401\"}]}}}"
+          }       
+        },       
           "PreProcessorModule": {
             "version": "1.0",
             "type": "docker",

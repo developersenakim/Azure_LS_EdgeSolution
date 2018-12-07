@@ -1,15 +1,3 @@
-// Copyright (c) Bespinglobal Corporation. All rights reserved.
-
-// using Newtonsoft.Json;
-
-
-// using System;
-// using System.Threading;
-// using System.Diagnostics;
-
-
-
-
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +11,8 @@ namespace PreProcessorModule
         private string m_logPath;
         private int m_numberOfLines;
         public LineStatus[] m_Linestatus { get; set; }
-        bool m_IsProcessComplete;
-        public Queue<ModuleMessageBody> m_ModuleMessageBody { get; set; }
+   
+        public Queue<ModuleMessageBody> m_totalMessageBodiesOfAllLines { get; set; }
 
         public ModuleManager(string configPath)
         {
@@ -32,9 +20,8 @@ namespace PreProcessorModule
             m_sqlConnectionString = "";
             m_shareFolderLocation = "";
             m_logPath = "";
-            m_numberOfLines = 0;
-            m_IsProcessComplete = false;
-            m_ModuleMessageBody = new Queue<ModuleMessageBody>();
+            m_numberOfLines = 0;           
+            m_totalMessageBodiesOfAllLines = new Queue<ModuleMessageBody>();
 
         }
 
@@ -89,36 +76,21 @@ namespace PreProcessorModule
             return m_sqlConnectionString;
 
         }
-         // line raw filename// cep // cep file name. 
-        public void ProcessAssignModuleMessageBody()
+        // line raw filename// cep // cep file name. 
+        public void ProcessToAssignModuleMessageBody()
         {
             for (int i = 0; i < m_numberOfLines; i++)// Access Each line folder. 
-            {               
-                Queue<ModuleMessageBody> tempMessageBody =  m_Linestatus[i].ProcessSingleDateFolderInfo();           
-
-                tempMessageBody.TrimExcess();
-                if (tempMessageBody.Count() > 0)
+            {
+                m_Linestatus[i].ProcessSingleDateFolderInfo();
+                m_Linestatus[i].m_ModuleMessageBody.TrimExcess();
+                if (m_Linestatus[i].m_ModuleMessageBody.Count() > 0)
                 {
-                    foreach (var messageStructure in tempMessageBody)
+                    foreach (var messageStructure in m_Linestatus[i].m_ModuleMessageBody)
                     {
-                        if ((messageStructure.LineName != string.Empty) &&( messageStructure.Raw != string.Empty) && (messageStructure.Cep != string.Empty))
-                        {
-                            m_ModuleMessageBody.Enqueue(new ModuleMessageBody() { LineName = messageStructure.LineName, Raw = messageStructure.Raw, Cep = messageStructure.Cep, Aps = messageStructure.Aps });
-                        }
-                    }                    
+                        m_totalMessageBodiesOfAllLines.Enqueue(messageStructure);
+                    }
                 }
             }// end of for       
-
-
-            m_IsProcessComplete = true;
-            while (m_IsProcessComplete == false)
-            {
-                // This while loop waits for Threadpool event for all  thread to complete
-            }
-            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Process Complete");
-
-
-
         }
     }
 }
