@@ -69,9 +69,7 @@ namespace PreProcessorModule
             logmessage = "Initialization complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}"; //local test : {00:00:00:38}
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
 
-
-
-            while (count < 2)//count < 1)//true
+            while (true)//count < 1)//true
             {
                 count++;
                 Process(moduleManager, currentEnvironmet, sqlclass, moduleclient);
@@ -91,15 +89,16 @@ namespace PreProcessorModule
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Resetting watch...");
                 stopwatch.Reset();
+
+                //////////Process            
+
+                // Wait until the app unloads or is cancelled
+                var cts = new CancellationTokenSource();
+                AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
+                Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
+                ConnectionManager.WhenCancelled(cts.Token).Wait();
             }
 
-            //////////Process            
-
-            // Wait until the app unloads or is cancelled
-            var cts = new CancellationTokenSource();
-            AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
-            Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-            ConnectionManager.WhenCancelled(cts.Token).Wait();
         }
 
         static void CreateDBAndNGTable(SQLClass p_sqlclass, Environment p_environment)
@@ -138,20 +137,20 @@ namespace PreProcessorModule
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, tempmessage);
 
 
-                if (p_sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
-                {
-                    //Chek if the data already exist 
-                    p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, "", temp.Raw, temp.Cep, temp.Aps);
+                //  if (p_sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
+                //  {
+                //Chek if the data already exist 
+                p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, "", temp.Raw, temp.Cep, temp.Aps);
 
-                    if (p_currentEnvironmet == Environment.productionOnlinux)
-                    {
-                        ConnectionManager.SendData(p_moduleclient, messageString).Wait();
-                    }
-                    else if (p_currentEnvironmet == Environment.testOnWindow)
-                    {
-                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, messageString);
-                    }
+                if (p_currentEnvironmet == Environment.productionOnlinux)
+                {
+                    ConnectionManager.SendData(p_moduleclient, messageString).Wait();
                 }
+                else if (p_currentEnvironmet == Environment.testOnWindow)
+                {
+                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, messageString);
+                }
+                //  }
             }
 
         }// end of Process void

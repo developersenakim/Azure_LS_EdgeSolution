@@ -14,6 +14,11 @@
                 "username": "$CONTAINER_REGISTRY_USERNAME_processormodule",
                 "password": "$CONTAINER_REGISTRY_PASSWORD_processormodule",
                 "address": "processormodule.azurecr.io"
+              },
+              "bespinmlws7750713637": {
+                "username": "$CONTAINER_REGISTRY_USERNAME_bespinmlws7750713637",
+                "password": "$CONTAINER_REGISTRY_PASSWORD_bespinmlws7750713637",
+                "address": "processormodule.azurecr.io"
               }
             }
           }
@@ -56,7 +61,17 @@
             }
           }
         },
-        "modules": {
+        "modules": {          
+        "machinelearningmodule": {
+          "type": "docker",
+          "settings": {
+            "image": "bespinmlws7750713637.azurecr.io/testmlmodule:5",
+            "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/azureuser/windows-share:/app/data\"],\"PortBindings\":{\"5550/tcp\":[{\" HostPort \":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}],\"5671/tcp\":[{\" HostPort \":\"5671\"}]}}}"
+          },
+          "version": "1.0",
+          "status": "running",
+          "restartPolicy": "always"
+        },
           "grafana": {
             "version": "1.0",
             "type": "docker",
@@ -73,9 +88,13 @@
             "status": "running",
             "restartPolicy": "always",
             "env": {
-              "ACCEPT_EULA": {"value": "Y"},
-              "SA_PASSWORD": {"value": "Strong!Passw0rd"}
-            },            
+              "ACCEPT_EULA": {
+                "value": "Y"
+              },
+              "SA_PASSWORD": {
+                "value": "Strong!Passw0rd"
+              }
+            },
             "settings": {
               "image": "mcr.microsoft.com/mssql/server:latest",
               "createOptions": "{\"Env\": [\"ACCEPT_EULA=Y\",\"MSSQL_SA_PASSWORD=Strong!Passw0rd\"],\"HostConfig\": {\"Mounts\": [{\"Target\": \"/var/opt/mssql\",\"Source\": \"sqlVolume\",\"Type\": \"volume\"}],\"PortBindings\": {\"1433/tcp\": [{\"HostPort\": \"1401\"}]}}}"
@@ -98,7 +117,8 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO $upstream"
+          "PreProcessorModuleTomachineLearning": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO BrokeredEndpoint(\"/modules/machinelearningmodule/inputs/amlInput\")",
+          "machineLearningToIoTHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
