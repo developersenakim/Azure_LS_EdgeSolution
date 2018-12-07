@@ -31,22 +31,22 @@ namespace PreProcessorModule
 
         static void Main(string[] args)
         {
-            ModuleManager moduleManager;
-            SQLClass sqlclass;
-            Environment currentEnvironmet;
-
-
             stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            ModuleManager moduleManager = null;
+            ModuleClient moduleclient = null;
+            SQLClass sqlclass;
+            Environment currentEnvironmet;
+
             int count = 0;
             string logmessage = string.Empty;
-            currentEnvironmet = Environment.testOnWindow;
+            currentEnvironmet = Environment.productionOnlinux;
             moduleManager = new ModuleManager("");
 
             if (currentEnvironmet == Environment.productionOnlinux)
-            {
-                ModuleClient moduleclient = ConnectionManager.Init().Result;
+            {               
+                moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
             }
             else if (currentEnvironmet == Environment.testOnWindow)
@@ -69,7 +69,7 @@ namespace PreProcessorModule
             while (count < 2)//count < 1)//true
             {
                 count++;
-                Process(moduleManager, currentEnvironmet, sqlclass);
+                Process(moduleManager, currentEnvironmet, sqlclass, moduleclient);
 
                 ////////////////////////////////////////// Process Complete ////////////////////////////
                 moduleManager.Clear();
@@ -88,15 +88,13 @@ namespace PreProcessorModule
                 stopwatch.Reset();
             }
 
-            ////////////Process            
-            // ConnectionManager.SendData(moduleclient).Wait();
+            //////////Process            
 
-
-            // // Wait until the app unloads or is cancelled
-            // var cts = new CancellationTokenSource();
-            // AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
-            // Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-            // ConnectionManager.WhenCancelled(cts.Token).Wait();
+            // Wait until the app unloads or is cancelled
+            var cts = new CancellationTokenSource();
+            AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
+            Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
+            ConnectionManager.WhenCancelled(cts.Token).Wait();
         }
 
         static void CreateDBAndNGTable(SQLClass p_sqlclass, Environment p_environment)
@@ -120,7 +118,7 @@ namespace PreProcessorModule
         }
 
 
-        static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironmet, SQLClass p_sqlclass)
+        static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironmet, SQLClass p_sqlclass, ModuleClient p_moduleclient)
         {            //this is being looped this
 
             p_moduleManager.ProcessToAssignModuleMessageBody(p_sqlclass);
@@ -144,7 +142,7 @@ namespace PreProcessorModule
 
                     if (p_currentEnvironmet == Environment.productionOnlinux)
                     {
-                        //  ConnectionManager.SendData(moduleclient, messageString).Wait();
+                         ConnectionManager.SendData(p_moduleclient, messageString).Wait();
                     }
                     else if (p_currentEnvironmet == Environment.testOnWindow)
                     {
@@ -152,7 +150,7 @@ namespace PreProcessorModule
                     }
                 }
             }
-         
+
         }// end of Process void
     }
 }

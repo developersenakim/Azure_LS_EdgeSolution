@@ -79,7 +79,7 @@ namespace PreProcessorModule
         static public string ParseDatetimeToDirectoryStyle(string p_directoryAboveTheDate, DateTime p_currentWorkingDate, string p_folderFormat)
         {       //Parse Date Time to Directory style
             string sresultDateTime = LogBuilder.ParseDateTimeToString(p_currentWorkingDate, p_folderFormat);// Parse the DateTime To string to get folderName
-            string dateFolderLocation = p_directoryAboveTheDate + "\\" + sresultDateTime; //Assign DateFolderLocation                 
+            string dateFolderLocation = p_directoryAboveTheDate + "/" + sresultDateTime; //Assign DateFolderLocation                 
 
             return dateFolderLocation;
         }
