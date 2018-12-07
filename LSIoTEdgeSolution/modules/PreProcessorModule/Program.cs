@@ -56,9 +56,8 @@ namespace PreProcessorModule
                    configfile = "C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt";
                 moduleManager = new ModuleManager("C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt");
             }
-            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,configfile);
-
             moduleManager.Init();
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,configfile);            
 
             sqlclass = new SQLClass(moduleManager.GetsqlConnectionString());
             sqlclass.CheckSqlConnection();
