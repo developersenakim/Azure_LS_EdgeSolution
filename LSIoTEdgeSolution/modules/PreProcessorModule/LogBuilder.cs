@@ -21,9 +21,9 @@ namespace PreProcessorModule
           static public void LogWrite(MessageStatus messageStatus, string logMessage)
         {
             //WindowPath
-            string path = @"C:\Users\sena.kim\Documents\Projects\LS산전\Azure_LS_EdgeSolution\LSIoTEdgeSolution\config\";
+            //string path = @"C:\Users\sena.kim\Documents\Projects\LS산전\Azure_LS_EdgeSolution\LSIoTEdgeSolution\config\";
             
-           // string path ="/app/documents/";
+            string path ="/app/documents/";
             try
             {
                 using (StreamWriter w = File.AppendText(path+"log.txt"))

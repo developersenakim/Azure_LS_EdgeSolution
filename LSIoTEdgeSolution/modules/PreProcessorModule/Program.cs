@@ -43,26 +43,27 @@ namespace PreProcessorModule
             string logmessage = string.Empty;
             currentEnvironmet = Environment.productionOnlinux;
             moduleManager = new ModuleManager("");
-            string configfile ="";
+            string configfile = "";
 
             if (currentEnvironmet == Environment.productionOnlinux)
-            {     configfile = "/app/documents/config.txt";          
+            {
+                configfile = "/app/documents/config.txt";
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
-                
+
             }
             else if (currentEnvironmet == Environment.testOnWindow)
             {
-                   configfile = "C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt";
+                configfile = "C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt";
                 moduleManager = new ModuleManager("C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt");
             }
             moduleManager.Init();
-            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,configfile);            
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, configfile);
 
             sqlclass = new SQLClass(moduleManager.GetsqlConnectionString());
             sqlclass.CheckSqlConnection();
             CreateDBAndNGTable(sqlclass, currentEnvironmet);
-            
+
 
             ////////////////////////////////////////// Initialization Complete ////////////////////////////
             logmessage = "Initialization complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}"; //local test : {00:00:00:38}
@@ -118,9 +119,7 @@ namespace PreProcessorModule
             p_sqlclass.CreateDBInSQL(dbname, dbfilepath);
             p_sqlclass.CreateTableInSQL(dbname, tablename, "(LINE varchar(50), 시험일자 varchar(50), Model varchar(50), BarCode varchar(50), 재판정결과 varchar(50), CREATEDT datetime, RAWLocation varchar(250), CEPLocation varchar(250), APSLocation varchar(250))");
             p_sqlclass.SetSqlNameAndTable(dbname, tablename);
-
         }
-
 
         static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironmet, SQLClass p_sqlclass, ModuleClient p_moduleclient)
         {            //this is being looped this
@@ -146,7 +145,7 @@ namespace PreProcessorModule
 
                     if (p_currentEnvironmet == Environment.productionOnlinux)
                     {
-                         ConnectionManager.SendData(p_moduleclient, messageString).Wait();
+                        ConnectionManager.SendData(p_moduleclient, messageString).Wait();
                     }
                     else if (p_currentEnvironmet == Environment.testOnWindow)
                     {
