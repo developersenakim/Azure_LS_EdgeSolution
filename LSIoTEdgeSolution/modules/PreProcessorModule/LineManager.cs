@@ -26,6 +26,7 @@ namespace PreProcessorModule
             m_apsfolderName = p_apsfolderName;
             m_cepfolderName = p_cepfolderName;
             m_rawfolderName = p_rawfolderName;
+            m_previousworkingDate = new DateTime(1000, 8, 1, 12, 0, 0);
         }
         public string m_LineName { get; set; }
         public string m_apsfolderName { get; set; }
@@ -47,6 +48,14 @@ namespace PreProcessorModule
             APS,
             CEP,
             RAW,
+        }
+
+        public void Clear()
+        {
+            m_currentdateFolderInfo.CepFolderLocation = "";
+            m_currentdateFolderInfo.BadProductsToPass.Clear();
+            m_ModuleMessageBody.Clear();
+
         }
 
 
@@ -96,13 +105,34 @@ namespace PreProcessorModule
         ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
         ///* @return: None 
         ///</summary>
-        public Queue<ModuleMessageBody> ProcessSingleDateFolderInfo()
+        public bool ProcessSingleDateFolderInfo()
         {
+            bool isThisNewDay = false;
+          //  var comparingDates = 1;
             m_currentdateFolderInfo = SetSingleDateFolderInfo();
-            SetbadProductsInfoUnderDateFolder(m_currentdateFolderInfo);
+    
+            if ( m_currentdateFolderInfo.WorkingDate.Date > m_previousworkingDate.Date)//  relationship = "is earlier than";
+            {
+                m_previousworkingDate = m_currentdateFolderInfo.WorkingDate;
+                isThisNewDay = true;
+            }
 
-            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_currentdateFolderInfo.DateFolderLocationUnderReport);
-            return ProcessBadReportsUnderSingleDates(m_currentdateFolderInfo);
+            else if (m_currentdateFolderInfo.WorkingDate.Date == m_previousworkingDate.Date) //relationship = "is the same time as";
+            {
+                isThisNewDay = false;
+                m_previousworkingDate = m_currentdateFolderInfo.WorkingDate;
+                SetbadProductsInfoUnderDateFolder(m_currentdateFolderInfo);
+
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_currentdateFolderInfo.DateFolderLocationUnderReport);
+                ProcessBadReportsUnderSingleDates(m_currentdateFolderInfo);
+            }
+            else
+            {
+
+
+            }
+            return isThisNewDay;
+            //relationship = "is later than";
         }
 
 
@@ -118,6 +148,7 @@ namespace PreProcessorModule
         {
             string dateFolderLocation = "";
             DateTime currentworkingDate = LogBuilder.GetKoreanFormatTime();//GetToday's date
+
             dateFolderLocation = DirectoryReader.ParseDatetimeToDirectoryStyle(m_reportfolderlocation, currentworkingDate, "yyyyMMdd");
             DateFolderInfo todayDateFolderInfo = (new DateFolderInfo()
             {

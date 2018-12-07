@@ -11,7 +11,7 @@ namespace PreProcessorModule
         private string m_logPath;
         private int m_numberOfLines;
         public LineStatus[] m_Linestatus { get; set; }
-   
+
         public Queue<ModuleMessageBody> m_totalMessageBodiesOfAllLines { get; set; }
 
         public ModuleManager(string configPath)
@@ -20,9 +20,18 @@ namespace PreProcessorModule
             m_sqlConnectionString = "";
             m_shareFolderLocation = "";
             m_logPath = "";
-            m_numberOfLines = 0;           
+            m_numberOfLines = 0;
             m_totalMessageBodiesOfAllLines = new Queue<ModuleMessageBody>();
 
+        }
+
+        public void Clear()
+        {
+            m_totalMessageBodiesOfAllLines.Clear();
+            for (int i = 0; i < m_numberOfLines; i++)// Access Each line folder. 
+            {
+                m_Linestatus[i].Clear();
+            }// end of for 
         }
 
 
@@ -77,18 +86,21 @@ namespace PreProcessorModule
 
         }
         // line raw filename// cep // cep file name. 
-        public void ProcessToAssignModuleMessageBody()
+        public void ProcessToAssignModuleMessageBody(SQLClass p_sqlclass)
         {
+            bool isthisNewDay = false;
             for (int i = 0; i < m_numberOfLines; i++)// Access Each line folder. 
             {
-                m_Linestatus[i].ProcessSingleDateFolderInfo();
-                m_Linestatus[i].m_ModuleMessageBody.TrimExcess();
-                if (m_Linestatus[i].m_ModuleMessageBody.Count() > 0)
+                isthisNewDay = m_Linestatus[i].ProcessSingleDateFolderInfo();
+                if (isthisNewDay == true)
                 {
-                    foreach (var messageStructure in m_Linestatus[i].m_ModuleMessageBody)
-                    {
-                        m_totalMessageBodiesOfAllLines.Enqueue(messageStructure);
-                    }
+                    p_sqlclass.TruncateTable("[LS_IoTEDGE].[dbo].[T_NG]");
+                }
+
+                m_Linestatus[i].m_ModuleMessageBody.TrimExcess();
+                foreach (var messageStructure in m_Linestatus[i].m_ModuleMessageBody)
+                {
+                    m_totalMessageBodiesOfAllLines.Enqueue(messageStructure);
                 }
             }// end of for       
         }
