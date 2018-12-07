@@ -43,22 +43,27 @@ namespace PreProcessorModule
             string logmessage = string.Empty;
             currentEnvironmet = Environment.productionOnlinux;
             moduleManager = new ModuleManager("");
+            string configfile ="";
 
             if (currentEnvironmet == Environment.productionOnlinux)
-            {               
+            {     configfile = "/app/documents/config.txt";          
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
+                
             }
             else if (currentEnvironmet == Environment.testOnWindow)
             {
+                   configfile = "C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt";
                 moduleManager = new ModuleManager("C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt");
             }
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,configfile);
 
             moduleManager.Init();
 
             sqlclass = new SQLClass(moduleManager.GetsqlConnectionString());
             sqlclass.CheckSqlConnection();
             CreateDBAndNGTable(sqlclass, currentEnvironmet);
+            
 
             ////////////////////////////////////////// Initialization Complete ////////////////////////////
             logmessage = "Initialization complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}"; //local test : {00:00:00:38}
