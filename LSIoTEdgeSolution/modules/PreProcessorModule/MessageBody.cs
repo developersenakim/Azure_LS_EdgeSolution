@@ -9,6 +9,14 @@ using System.Collections.Generic;
 using System.Net;
 namespace PreProcessorModule
 {
+
+    public enum Environment
+    {
+        productionOnlinux,
+        testOnWindow, pri
+    }
+
+
     public class MessageBody
     {
         [JsonProperty("line")]
@@ -73,7 +81,7 @@ namespace PreProcessorModule
         // Should also override == and != operators.
     }
 
-// Bad product is without empty string in barcode. 
+    // Bad product is without empty string in barcode. 
     public class BadProductInfo //: IEquatable<Part>
     {
         public string Date { get; set; }

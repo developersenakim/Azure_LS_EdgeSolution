@@ -76,10 +76,19 @@ namespace PreProcessorModule
         ///* @parameter: string DirectoryAboveTheFile, string folderFormat (report : "yyyyMMdd" or AIDATA :  "yyyy-MM-dd")
         ///* @return: string DateFolderLocation 
         ///</summary>
-        static public string ParseDatetimeToDirectoryStyle(string p_directoryAboveTheDate, DateTime p_currentWorkingDate, string p_folderFormat)
+        static public string ParseDatetimeToDirectoryStyle(string p_directoryAboveTheDate, DateTime p_currentWorkingDate, string p_folderFormat, Environment p_currentEnvironment)
         {       //Parse Date Time to Directory style
             string sresultDateTime = LogBuilder.ParseDateTimeToString(p_currentWorkingDate, p_folderFormat);// Parse the DateTime To string to get folderName
-            string dateFolderLocation = p_directoryAboveTheDate + "/" + sresultDateTime; //Assign DateFolderLocation                 
+            string dateFolderLocation = "";
+            if (p_currentEnvironment == Environment.productionOnlinux)
+            {
+                dateFolderLocation = p_directoryAboveTheDate + "/" + sresultDateTime;
+            }
+            else if (p_currentEnvironment == Environment.testOnWindow)
+            {
+                dateFolderLocation = p_directoryAboveTheDate + "\\" + sresultDateTime;
+            }
+            dateFolderLocation = p_directoryAboveTheDate + "/" + sresultDateTime; //Assign DateFolderLocation                 
 
             return dateFolderLocation;
         }
@@ -103,9 +112,9 @@ namespace PreProcessorModule
                 allLines = File.ReadAllLines(fileLocation);
             }
             catch
-            {             
+            {
                 Thread.Sleep(20);
-                currentRetry++;               
+                currentRetry++;
                 if (currentRetry > 10)
                 {
                     // If this isn't a transient error or we shouldn't retry, 

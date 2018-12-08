@@ -22,12 +22,6 @@ namespace PreProcessorModule
     class Program
     {
         private static Stopwatch stopwatch;
-        private enum Environment
-        {
-            productionOnlinux,
-            testOnWindow, pri
-        }
-
 
         static void Main(string[] args)
         {
@@ -39,17 +33,20 @@ namespace PreProcessorModule
             SQLClass sqlclass;
             Environment currentEnvironmet;
 
+
             int count = 0;
             string logmessage = string.Empty;
             currentEnvironmet = Environment.productionOnlinux;
             moduleManager = new ModuleManager("");
             string configfile = "";
+            bool repeat = true;
 
             if (currentEnvironmet == Environment.productionOnlinux)
             {
                 configfile = "/app/documents/config.txt";
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
+
 
             }
             else if (currentEnvironmet == Environment.testOnWindow)
@@ -69,7 +66,7 @@ namespace PreProcessorModule
             logmessage = "Initialization complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}"; //local test : {00:00:00:38}
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
 
-            while (true)//count < 1)//true
+            while (repeat == true)//count < 1)//true
             {
                 count++;
                 Process(moduleManager, currentEnvironmet, sqlclass, moduleclient);
@@ -89,15 +86,12 @@ namespace PreProcessorModule
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Resetting watch...");
                 stopwatch.Reset();
-
-                //////////Process            
-
-                // Wait until the app unloads or is cancelled
-                var cts = new CancellationTokenSource();
-                AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
-                Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-                ConnectionManager.WhenCancelled(cts.Token).Wait();
             }
+            // Wait until the app unloads or is cancelled
+            var cts = new CancellationTokenSource();
+            AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
+            Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
+            ConnectionManager.WhenCancelled(cts.Token).Wait();
 
         }
 
@@ -120,10 +114,13 @@ namespace PreProcessorModule
             p_sqlclass.SetSqlNameAndTable(dbname, tablename);
         }
 
-        static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironmet, SQLClass p_sqlclass, ModuleClient p_moduleclient)
+        static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironment, SQLClass p_sqlclass, ModuleClient p_moduleclient)
         {            //this is being looped this
 
-            p_moduleManager.ProcessToAssignModuleMessageBody(p_sqlclass);
+            string tempmessage = "Start Processing Line reports.";
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, tempmessage);
+
+            p_moduleManager.ProcessToAssignModuleMessageBody(p_sqlclass, p_currentEnvironment);
             p_moduleManager.m_totalMessageBodiesOfAllLines.TrimExcess();
             int tempMax = p_moduleManager.m_totalMessageBodiesOfAllLines.Count;
             int count = 0;
@@ -132,25 +129,25 @@ namespace PreProcessorModule
                 count++;
                 var messageBody = LogBuilder.AssignTempMessageBody(temp.LineName, temp.Raw, temp.Cep);
                 var messageString = JsonConvert.SerializeObject(messageBody);
-                string tempmessage = $"This ID : {count} Line Name {temp.LineName}, Barcode {temp.BadProductInfo.BarCode}";
+                tempmessage = $"This ID : {count} Line Name {temp.LineName}, Barcode {temp.BadProductInfo.BarCode}";
 
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, tempmessage);
 
 
-                //  if (p_sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
-                //  {
-                //Chek if the data already exist 
-                p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, "", temp.Raw, temp.Cep, temp.Aps);
+                if (p_sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
+                {
+                    //Chek if the data already exist 
+                    p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, "", temp.Raw, temp.Cep, temp.Aps);
 
-                if (p_currentEnvironmet == Environment.productionOnlinux)
-                {
-                    ConnectionManager.SendData(p_moduleclient, messageString).Wait();
+                    if (p_currentEnvironment == Environment.productionOnlinux)
+                    {
+                        ConnectionManager.SendData(p_moduleclient, messageString).Wait();
+                    }
+                    else if (p_currentEnvironment == Environment.testOnWindow)
+                    {
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, messageString);
+                    }
                 }
-                else if (p_currentEnvironmet == Environment.testOnWindow)
-                {
-                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, messageString);
-                }
-                //  }
             }
 
         }// end of Process void

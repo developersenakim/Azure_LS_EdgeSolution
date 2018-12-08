@@ -86,12 +86,12 @@ namespace PreProcessorModule
 
         }
         // line raw filename// cep // cep file name. 
-        public void ProcessToAssignModuleMessageBody(SQLClass p_sqlclass)
+        public void ProcessToAssignModuleMessageBody(SQLClass p_sqlclass, Environment p_currentEnvironment)
         {
             bool isthisNewDay = false;
             for (int i = 0; i < m_numberOfLines; i++)// Access Each line folder. 
             {
-                isthisNewDay = m_Linestatus[i].ProcessSingleDateFolderInfo();
+                isthisNewDay = m_Linestatus[i].ProcessSingleDateFolderInfo(p_currentEnvironment);
                 if (isthisNewDay == true)
                 {
                     p_sqlclass.TruncateTable("[LS_IoTEDGE].[dbo].[T_NG]");

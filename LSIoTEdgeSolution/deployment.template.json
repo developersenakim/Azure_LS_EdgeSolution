@@ -18,7 +18,7 @@
               "bespinmlws7750713637": {
                 "username": "$CONTAINER_REGISTRY_USERNAME_bespinmlws7750713637",
                 "password": "$CONTAINER_REGISTRY_PASSWORD_bespinmlws7750713637",
-                "address": "processormodule.azurecr.io"
+                "address": "bespinmlws7750713637.azurecr.io"
               }
             }
           }
@@ -61,17 +61,17 @@
             }
           }
         },
-        "modules": {          
-        "machinelearningmodule": {
-          "type": "docker",
-          "settings": {
-            "image": "bespinmlws7750713637.azurecr.io/testmlmodule:5",
-            "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/azureuser/windows-share:/app/data\"],\"PortBindings\":{\"5550/tcp\":[{\" HostPort \":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}],\"5671/tcp\":[{\" HostPort \":\"5671\"}]}}}"
+        "modules": {
+          "machinelearningmodule": {
+            "type": "docker",
+            "settings": {
+              "image": "bespinmlws7750713637.azurecr.io/edgemlmodule:8",
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/azureuser/windows-share:/app/data\"],\"PortBindings\":{\"5550/tcp\":[{\" HostPort \":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}],\"5671/tcp\":[{\" HostPort \":\"5671\"}]}}}"
+            },
+            "version": "1.0",
+            "status": "running",
+            "restartPolicy": "always"
           },
-          "version": "1.0",
-          "status": "running",
-          "restartPolicy": "always"
-        },
           "grafana": {
             "version": "1.0",
             "type": "docker",
@@ -109,6 +109,16 @@
               "image": "${MODULES.PreProcessorModule}",
               "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/vmuser01/Windows-Share:/app/data\",\"/home/vmuser01/Share:/app/documents\",\"/app/documents:/home/vmuser01/Share:\"]}}"
             }
+          },
+          "PostProcessorModule": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.PostProcessorModule}",
+              "createOptions": {}
+            }
           }
         }
       }
@@ -118,7 +128,8 @@
         "schemaVersion": "1.0",
         "routes": {
           "PreProcessorModuleTomachineLearning": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO BrokeredEndpoint(\"/modules/machinelearningmodule/inputs/amlInput\")",
-          "machineLearningToIoTHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO $upstream"
+          "machineLearningToIoTHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO BrokeredEndpoint(\"/modules/PostProcessorModule/inputs/input1\")",
+          "PostProcessorModuleToIoTHub": "FROM /messages/modules/PostProcessorModule/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200

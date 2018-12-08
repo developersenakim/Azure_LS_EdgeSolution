@@ -43,6 +43,8 @@ namespace PreProcessorModule
         public DateFolderInfo m_currentdateFolderInfo { get; set; }
         //  public Queue<BadProductInfo> m_badProductsInfo { get; set; }
         public Queue<ModuleMessageBody> m_ModuleMessageBody { get; set; }
+
+        public Environment m_currentEnvironment;
         public enum RestultFileType
         {
             APS,
@@ -105,11 +107,11 @@ namespace PreProcessorModule
         ///* @parameter:string Sharefolderlocation, directory name as line name eg line2/3/4
         ///* @return: None 
         ///</summary>
-        public bool ProcessSingleDateFolderInfo()
+        public bool ProcessSingleDateFolderInfo(Environment p_currentEnvironment)
         {
             bool isThisNewDay = false;
           //  var comparingDates = 1;
-            m_currentdateFolderInfo = SetSingleDateFolderInfo();
+            m_currentdateFolderInfo = SetSingleDateFolderInfo(p_currentEnvironment);
     
             if ( m_currentdateFolderInfo.WorkingDate.Date > m_previousworkingDate.Date)//  relationship = "is earlier than";
             {
@@ -144,12 +146,13 @@ namespace PreProcessorModule
         ///* @return: None 
         ///</summary>
 
-        private DateFolderInfo SetSingleDateFolderInfo()
+        private DateFolderInfo SetSingleDateFolderInfo(Environment p_currentEnvironment)
         {
+            m_currentEnvironment = p_currentEnvironment;
             string dateFolderLocation = "";
             DateTime currentworkingDate = LogBuilder.GetKoreanFormatTime();//GetToday's date
 
-            dateFolderLocation = DirectoryReader.ParseDatetimeToDirectoryStyle(m_reportfolderlocation, currentworkingDate, "yyyyMMdd");
+            dateFolderLocation = DirectoryReader.ParseDatetimeToDirectoryStyle(m_reportfolderlocation, currentworkingDate, "yyyyMMdd", m_currentEnvironment);
             DateFolderInfo todayDateFolderInfo = (new DateFolderInfo()
             {
                 WorkingDate = currentworkingDate,
@@ -371,7 +374,7 @@ namespace PreProcessorModule
             string workingfolder = string.Empty;
             if (m_currentdateFolderInfo != null)
             {
-                workingfolder = DirectoryReader.ParseDatetimeToDirectoryStyle(m_aidatafolderlocation, p_workingdate, "yyyy-MM-dd");
+                workingfolder = DirectoryReader.ParseDatetimeToDirectoryStyle(m_aidatafolderlocation, p_workingdate, "yyyy-MM-dd", m_currentEnvironment);
                 workingfolder = workingfolder + p_fileType;
                 bool isdirectoryExist = false;
                 if (DirectoryReader.IsDirectoryEmpty(workingfolder) == false)
