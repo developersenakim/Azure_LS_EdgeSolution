@@ -1,13 +1,11 @@
 // Copyright (c) Bespinglobal Corporation. All rights reserved.
 
 using Newtonsoft.Json;
-
 using System;
-
 using System.Collections.Generic;
-
 using System.Net;
-namespace PreProcessorModule
+
+namespace Functions.Samples
 {
 
     public enum Environment
@@ -24,9 +22,9 @@ namespace PreProcessorModule
         [JsonProperty("raw")]
         public string Raw { get; set; }
         [JsonProperty("cep")]
-        public string Cep{ get; set; }
+        public string Cep { get; set; }
         [JsonProperty("predicted")]
-        public string Predicted{ get; set; }
+        public string Predicted { get; set; }
 
 
     }

@@ -110,13 +110,13 @@
               "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/vmuser01/Windows-Share:/app/data\",\"/home/vmuser01/Share:/app/documents\",\"/app/documents:/home/vmuser01/Share:\"]}}"
             }
           },
-          "PostProcessorModule": {
+          "PostProcessorFunction": {
             "version": "1.0",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "${MODULES.PostProcessorModule}",
+              "image": "${MODULES.PostProcessorFunction}",
               "createOptions": {}
             }
           }
@@ -128,8 +128,8 @@
         "schemaVersion": "1.0",
         "routes": {
           "PreProcessorModuleTomachineLearning": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO BrokeredEndpoint(\"/modules/machinelearningmodule/inputs/amlInput\")",
-          "machineLearningToIoTHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO BrokeredEndpoint(\"/modules/PostProcessorModule/inputs/input1\")",
-          "PostProcessorModuleToIoTHub": "FROM /messages/modules/PostProcessorModule/outputs/* INTO $upstream"
+          "machineLearningToIoTHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO BrokeredEndpoint(\"/modules/PostProcessorFunction/inputs/input1\")",
+          "PostProcessorFunctionToIoTHub": "FROM /messages/modules/PostProcessorFunction/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200

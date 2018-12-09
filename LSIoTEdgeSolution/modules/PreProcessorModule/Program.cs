@@ -46,8 +46,6 @@ namespace PreProcessorModule
                 configfile = "/app/documents/config.txt";
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
-
-
             }
             else if (currentEnvironmet == Environment.testOnWindow)
             {
