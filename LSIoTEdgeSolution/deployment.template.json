@@ -66,7 +66,7 @@
             "type": "docker",
             "settings": {
               "image": "bespinmlws7750713637.azurecr.io/edgemlmodule:8",
-              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/azureuser/windows-share:/app/data\"],\"PortBindings\":{\"5550/tcp\":[{\" HostPort \":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}],\"5671/tcp\":[{\" HostPort \":\"5671\"}]}}}"
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/root/mc:/app/data\"],\"PortBindings\":{\"5550/tcp\":[{\" HostPort \":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}],\"5671/tcp\":[{\" HostPort \":\"5671\"}]}}}"
             },
             "version": "1.0",
             "status": "running",
@@ -107,7 +107,7 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.PreProcessorModule}",
-              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/home/vmuser01/Windows-Share:/app/data\",\"/home/vmuser01/Share:/app/documents\",\"/app/documents:/home/vmuser01/Share:\"]}}"
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/root/mc:/app/data\",\"/root/document:/app/documents\",\"/app/documents:/root/document\"]}}"
             }
           },
           "PostProcessorFunction": {
@@ -117,7 +117,7 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.PostProcessorFunction}",
-              "createOptions": {}
+              "createOptions": "{\"HostConfig\":{\"Binds\":[\"/root/mc:/app/data\",\"/root/document:/app/documents\",\"/app/documents:/root/document\"]}}"
             }
           }
         }
