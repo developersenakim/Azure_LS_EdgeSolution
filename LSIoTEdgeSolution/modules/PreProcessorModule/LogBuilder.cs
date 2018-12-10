@@ -192,7 +192,8 @@ namespace PreProcessorModule
             {
                 LineName = p_linename,
                 Raw = p_raw,
-                Cep = p_cep,
+                Cep = p_cep
+          //     Predicted = "NG"
 
             };
             return messageBody;

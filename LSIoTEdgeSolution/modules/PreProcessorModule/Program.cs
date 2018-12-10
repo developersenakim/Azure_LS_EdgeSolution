@@ -43,6 +43,7 @@ namespace PreProcessorModule
 
             if (currentEnvironmet == Environment.productionOnlinux)
             {
+              
                 configfile = "/app/documents/config.txt";
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
@@ -136,8 +137,18 @@ namespace PreProcessorModule
 
                 if (p_sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
                 {
+                    Random _r = new Random();
+                    int a = _r.Next(2);
+                    if (a == 0)
+                    {
+                        temp.BadProductInfo.Result = "NG";
+                    }
+                    else if (a == 1)
+                    {
+                        temp.BadProductInfo.Result = "OK";
+                    }
                     //Chek if the data already exist 
-                    p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, "", temp.Raw, temp.Cep, temp.Aps);
+                    p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, temp.BadProductInfo.Result, temp.Raw, temp.Cep, temp.Aps);
 
                     if (p_currentEnvironment == Environment.productionOnlinux)
                     {

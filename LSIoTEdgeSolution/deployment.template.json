@@ -103,7 +103,7 @@
           "PreProcessorModule": {
             "version": "1.0",
             "type": "docker",
-            "status": "running",
+            "status": "stopped",
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.PreProcessorModule}",
@@ -128,7 +128,8 @@
         "schemaVersion": "1.0",
         "routes": {
           "PreProcessorModuleTomachineLearning": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO BrokeredEndpoint(\"/modules/machinelearningmodule/inputs/amlInput\")",
-          "machineLearningToIoTHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO BrokeredEndpoint(\"/modules/PostProcessorModule/inputs/input1\")",
+          "machineLearningToModule": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO BrokeredEndpoint(\"/modules/PostProcessorModule/inputs/input1\")",
+          "machineLearningToHub": "FROM /messages/modules/machinelearningmodule/outputs/amlOutput INTO $upstream",
           "PostProcessorModuleToIoTHub": "FROM /messages/modules/PostProcessorModule/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {

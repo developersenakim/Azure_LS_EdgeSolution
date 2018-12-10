@@ -46,7 +46,7 @@ public class LogBuilder
     {
         try
         {
-            using (StreamWriter w = File.AppendText(m_logpath + "PreProcessorlog.txt"))
+            using (StreamWriter w = File.AppendText(m_logpath))
             {
                 WriteOnConsole(logMessage, messageStatus, w);
             }
