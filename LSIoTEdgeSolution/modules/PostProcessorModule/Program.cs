@@ -9,6 +9,12 @@ namespace PostProcessorModule
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using System.Collections.Generic;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+    using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
+    using System.Net;
+    using System.Diagnostics;
 
     class Program
     {
@@ -60,6 +66,22 @@ namespace PostProcessorModule
         /// </summary>
         static async Task<MessageResponse> PipeMessage(Message message, object userContext)
         {
+
+             LogBuilder logbuilder = new LogBuilder("/app/documents/PreProcessorlog.txt");
+            string configfile = "/app/documents/config.txt";
+            string connectionstring = "Data Source=tcp:sql,1433;Initial Catalog=MeasurementsDB;User Id=SA;Password=Strong!Passw0rd;TrustServerCertificate=False;Connection Timeout=30;";
+            string dbname = "LS_IoTEDGE";
+            string tablename = "T_NG"; // NG_TABLE   
+            string dbfilepath = "'/var/opt/mssql/lsiotedge.mdf'";
+            SQLClass sqlClass = new SQLClass(configfile, logbuilder, connectionstring);
+            sqlClass.CheckSqlConnection();
+            sqlClass.CreateDBInSQL(dbname, dbfilepath);
+            sqlClass.CreateTableInSQL(dbname, tablename, "(LINE varchar(50), 시험일자 varchar(50), Model varchar(50), BarCode varchar(50), 재판정결과 varchar(50), CREATEDT datetime, RAWLocation varchar(250), CEPLocation varchar(250), APSLocation varchar(250))");
+            sqlClass.SetSqlNameAndTable(dbname, tablename);
+
+            logbuilder.LogWrite(LogBuilder.MessageStatus.Usual, "SQL connected");
+
+            ///////////////////////////////// INIT END 
             int counterValue = Interlocked.Increment(ref counter);
 
             var moduleClient = userContext as ModuleClient;
@@ -71,6 +93,11 @@ namespace PostProcessorModule
             byte[] messageBytes = message.GetBytes();
             string messageString = Encoding.UTF8.GetString(messageBytes);
             Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
+            var messageBody = JsonConvert.DeserializeObject<MessageBody>(messageString);
+            string print =$" MessageBody {messageBody.Cep}";
+            logbuilder.LogWrite(LogBuilder.MessageStatus.Usual, print);
+           
+            sqlClass.UpdateTableInSQL(messageBody.Cep, messageBody.Predicted);
 
             if (!string.IsNullOrEmpty(messageString))
             {
