@@ -24,10 +24,7 @@ namespace PreProcessorModule
         [JsonProperty("raw")]
         public string Raw { get; set; }
         [JsonProperty("cep")]
-        public string Cep{ get; set; }
-        [JsonProperty("predicted")]
-        public string Predicted{ get; set; }
-
+        public string Cep; //True False Unkown
 
     }
     public class ModuleMessageBody
