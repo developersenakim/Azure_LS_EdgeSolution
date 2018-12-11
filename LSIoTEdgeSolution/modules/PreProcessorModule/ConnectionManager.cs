@@ -75,6 +75,7 @@ namespace PreProcessorModule
                     message.ContentType = "application/json";
 
                     await deviceClient.SendEventAsync("messageOutput", message);
+
                 }
             }
             catch (Exception ex)

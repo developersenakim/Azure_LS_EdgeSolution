@@ -86,6 +86,16 @@
               "image": "${MODULES.PostProcessorModule.debug}",
               "createOptions": {}
             }
+          },
+          "PostProcessorFunction": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.PostProcessorFunction.debug}",
+              "createOptions": {}
+            }
           }
         }
       }
@@ -97,6 +107,7 @@
           "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/* INTO $upstream",
           "sensorToPreProcessorModule": "FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/PreProcessorModule/inputs/input1\")",
           "PostProcessorModuleToIoTHub": "FROM /messages/modules/PostProcessorModule/outputs/* INTO $upstream"
+          
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200

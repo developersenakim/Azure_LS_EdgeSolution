@@ -7,7 +7,7 @@ using Microsoft.Azure.Devices.Client;
 using System.Threading.Tasks;
 using System.Data;
 
-//dotnet add package Newtonsoft.Json
+//dotnet add package System.Data.SqlClient
 //#r "Microsoft.Azure.Devices.Client"
 //#r "Newtonsoft.Json"
 //#r "System.Data.SqlClient"

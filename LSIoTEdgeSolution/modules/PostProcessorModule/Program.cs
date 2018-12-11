@@ -20,9 +20,6 @@ namespace PostProcessorModule
     {
         static int counter;
 
-        static LogBuilder logbuilder;
-        static SQLClass sqlClass;
-
         static void Main(string[] args)
         {
             Init().Wait();
@@ -50,30 +47,17 @@ namespace PostProcessorModule
         /// </summary>
         static async Task Init()
         {
-            string configfile = "/app/documents/config.txt";
-            string connectionstring = "Data Source=tcp:sql,1433;Initial Catalog=MeasurementsDB;User Id=SA;Password=Strong!Passw0rd;TrustServerCertificate=False;Connection Timeout=30;";
-
-
             AmqpTransportSettings amqpSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
             ITransportSettings[] settings = { amqpSetting };
-
-            logbuilder = new LogBuilder("/app/documents/PreProcessorlog.txt");
-            sqlClass = new SQLClass(configfile, logbuilder, connectionstring);
 
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
-            bool repeat = true;
-            int countrepeat = 0;
 
-            while (repeat == true)
+            bool repeat = true;
+            while (repeat)
             {
-                countrepeat++;
-                if (countrepeat == 1)
-                {
-                    Console.WriteLine("Repeating SetInputMessageHandler.");
-                }
                 // Register callback to be called when a message is received by the module
                 await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
             }
@@ -86,19 +70,6 @@ namespace PostProcessorModule
         /// </summary>
         static async Task<MessageResponse> PipeMessage(Message message, object userContext)
         {
-
-            string dbname = "LS_IoTEDGE";
-            string tablename = "T_NG"; // NG_TABLE   
-            string dbfilepath = "'/var/opt/mssql/lsiotedge.mdf'";
-
-            sqlClass.CheckSqlConnection();
-            sqlClass.CreateDBInSQL(dbname, dbfilepath);
-            sqlClass.CreateTableInSQL(dbname, tablename, "(LINE varchar(50), 시험일자 varchar(50), Model varchar(50), BarCode varchar(50), 재판정결과 varchar(50), CREATEDT datetime, RAWLocation varchar(250), CEPLocation varchar(250), APSLocation varchar(250))");
-            sqlClass.SetSqlNameAndTable(dbname, tablename);
-
-            logbuilder.LogWrite(LogBuilder.MessageStatus.Usual, "SQL connected");
-
-            ///////////////////////////////// INIT END 
             int counterValue = Interlocked.Increment(ref counter);
 
             var moduleClient = userContext as ModuleClient;
@@ -111,22 +82,18 @@ namespace PostProcessorModule
             string messageString = Encoding.UTF8.GetString(messageBytes);
             char[] Mychar = { '[', ']' };
             char[] Mychar1 = { '"' };
-            
             // string  newstring = messageString.TrimStart(Mychar1);
             // newstring = newstring.TrimEnd(Mychar1);
-            string newstring = messageString.Replace("\\","");
-            newstring = newstring.Replace("[\"","[");
-            newstring = newstring.Replace("\"]","]");
-            newstring = newstring.Trim('\\');            
+            string newstring = messageString.Replace("\\", "");
+            newstring = newstring.Replace("[\"", "[");
+            newstring = newstring.Replace("\"]", "]");
+            newstring = newstring.Trim('\\');
+            newstring = newstring.Trim(Mychar);
 
             Console.WriteLine($"Received message: {counterValue}, Body: {newstring}");
             var messageBody = JsonConvert.DeserializeObject<MessageBody>(newstring);
-            string print = $" MessageBody {messageBody.Cep}";
-            logbuilder.LogWrite(LogBuilder.MessageStatus.Usual, print);
 
-            sqlClass.UpdateTableInSQL(messageBody.Cep, messageBody.Predicted);
-
-            if (!string.IsNullOrEmpty(newstring))
+            if (!string.IsNullOrEmpty(messageString))
             {
                 var pipeMessage = new Message(messageBytes);
                 foreach (var prop in message.Properties)

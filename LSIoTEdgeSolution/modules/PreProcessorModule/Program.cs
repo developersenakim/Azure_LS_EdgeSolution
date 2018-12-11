@@ -30,8 +30,8 @@ namespace PreProcessorModule
 
             ModuleManager moduleManager = null;
             ModuleClient moduleclient = null;
-            SQLClass sqlclass;
-            Environment currentEnvironmet;
+            SQLClass sqlclass = null;
+            Environment currentEnvironmet = Environment.productionOnlinux;
 
 
             int count = 0;

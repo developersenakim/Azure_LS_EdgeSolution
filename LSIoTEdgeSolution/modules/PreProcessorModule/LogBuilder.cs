@@ -169,7 +169,7 @@ namespace PreProcessorModule
                 case MessageStatus.Usual:
 
                     WriteMessage(message);
-                    Log(messageToWrite, w, "# Usual Log : ");
+                   // Log(messageToWrite, w, "# Usual Log : ");
                     return messageToWrite;
 
                 case MessageStatus.Error:
@@ -179,7 +179,7 @@ namespace PreProcessorModule
 
                 case MessageStatus.Warning:
                     WriteWarningMessage("Error :" + message);
-                    Log(messageToWrite, w, "# Warning Log : ");
+                  //  Log(messageToWrite, w, "# Warning Log : ");
                     return messageToWrite;
 
                 default:
