@@ -15,6 +15,9 @@ namespace PostProcessorModule
     using Newtonsoft.Json;
     using System.Net;
     using System.Diagnostics;
+    using Sql = System.Data.SqlClient;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Host;
 
     class Program
     {
@@ -57,12 +60,10 @@ namespace PostProcessorModule
 
             bool repeat = true;
             while (repeat)
-            {
-                // Register callback to be called when a message is received by the module
+            {                // Register callback to be called when a message is received by the module
                 await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
             }
         }
-
         /// <summary>
         /// This method is called whenever the module is sent a message from the EdgeHub. 
         /// It just pipe the messages without any change.
@@ -93,9 +94,28 @@ namespace PostProcessorModule
             Console.WriteLine($"Received message: {counterValue}, Body: {newstring}");
             var messageBody = JsonConvert.DeserializeObject<MessageBody>(newstring);
 
+            //////////////////DO HERE
+            // if condition to check if cep exist and if exist 
+            // -- await
+            //UpdateSQLTable(messageBody.Cep, messageBody.Predicted);
+            ///////////////////////////////
+
+            MessageBody new_messageBody = new MessageBody
+            {
+                LineName = messageBody.LineName,
+                Raw = messageBody.Raw,
+                Cep = messageBody.Cep,
+                Predicted = messageBody.Predicted
+            };
+
+            messageString = JsonConvert.SerializeObject(new_messageBody);
             if (!string.IsNullOrEmpty(messageString))
             {
+                messageBytes = Encoding.UTF8.GetBytes(messageString);
+
                 var pipeMessage = new Message(messageBytes);
+                pipeMessage.ContentEncoding = "utf-8";
+                pipeMessage.ContentType = "application/json";
                 foreach (var prop in message.Properties)
                 {
                     pipeMessage.Properties.Add(prop.Key, prop.Value);
@@ -104,6 +124,71 @@ namespace PostProcessorModule
                 Console.WriteLine("Received message sent");
             }
             return MessageResponse.Completed;
+        }
+
+
+        static public void UpdateSQLTable(string p_ceplocation, string p_resultValue)
+        {
+
+            string m_dbname = "LS_IoTEDGE";
+            string m_tablename = "T_NG"; // NG_TABLE           
+            string m_connectionstring = "Data Source=tcp:sql,1433;User Id=SA;Password=Strong!Passw0rd;TrustServerCertificate=False;Connection Timeout=30;";
+            string m_resultValue = p_resultValue;
+            string m_ceplocation = p_ceplocation;
+
+            string temp_UpdateTableInSQLstring = $"UPDATE [{m_dbname}].[dbo].[{m_tablename}] SET [재판정결과]='{m_resultValue}' WHERE [CEPLocation] = '{m_ceplocation}';";
+            try
+            {
+                using (Sql.SqlConnection connection = new Sql.SqlConnection())
+                {
+                    connection.ConnectionString = m_connectionstring;
+                    connection.Open();
+                    using (Sql.SqlCommand command = new Sql.SqlCommand(temp_UpdateTableInSQLstring, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Sql.SqlException exception)
+            {
+                Console.WriteLine("ConnectionString: {0}", exception);
+            }
+        }
+
+        static public void ReadContentfromConfigAndReturnStringReference(string p_filePath, string splitstring, ref string var)
+        {
+            if (System.IO.File.Exists(p_filePath))
+            {
+                string[] lines = System.IO.File.ReadAllLines(p_filePath);
+                // System.Console.WriteLine("Contents of WriteLines2.txt = ");
+                foreach (string line in lines)
+                {
+                    if (line.StartsWith(splitstring))
+                    {
+                        string tempstring = line.Split(splitstring)[1];
+                        tempstring = tempstring.TrimStart();
+                        tempstring = tempstring.TrimEnd();
+                        var = tempstring;
+                    }
+                }
+            }
+        }// end of  public void ReadContentfromConfig(string filepath, string splitstring, ref string var)
+
+
+
+        public class MessageBody
+        {
+            [JsonProperty("line")]
+            public string LineName { get; set; }
+            [JsonProperty("raw")]
+            public string Raw { get; set; }
+            [JsonProperty("cep")]
+            public string Cep { get; set; }//True False Unkown
+
+            [JsonProperty("predicted")]
+            public string Predicted { get; set; }//True False Unkown
+
         }
     }
 }
