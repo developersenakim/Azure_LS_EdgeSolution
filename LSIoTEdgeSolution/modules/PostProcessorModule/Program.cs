@@ -1,23 +1,21 @@
 namespace PostProcessorModule
 {
     using System;
-    using System.IO;
-    using System.Runtime.InteropServices;
+    //  using System.IO;
+    //  using System.Runtime.InteropServices;
     using System.Runtime.Loader;
-    using System.Security.Cryptography.X509Certificates;
+    // using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
-    using System.Collections.Generic;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using Microsoft.Azure.Devices.Shared;
+    //using System.Collections.Generic;
+    // using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+    //using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
-    using System.Net;
-    using System.Diagnostics;
+    // using System.Net;
+    // using System.Diagnostics;
     using Sql = System.Data.SqlClient;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Host;
 
     class Program
     {
@@ -58,11 +56,9 @@ namespace PostProcessorModule
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
-            bool repeat = true;
-            while (repeat)
-            {                // Register callback to be called when a message is received by the module
-                await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
-            }
+            // Register callback to be called when a message is received by the module
+            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
+
         }
         /// <summary>
         /// This method is called whenever the module is sent a message from the EdgeHub. 
@@ -109,6 +105,8 @@ namespace PostProcessorModule
             };
 
             messageString = JsonConvert.SerializeObject(new_messageBody);
+            Console.WriteLine($"Serialzing : {new_messageBody}");
+
             if (!string.IsNullOrEmpty(messageString))
             {
                 messageBytes = Encoding.UTF8.GetBytes(messageString);

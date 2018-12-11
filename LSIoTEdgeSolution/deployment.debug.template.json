@@ -86,16 +86,6 @@
               "image": "${MODULES.PostProcessorModule.debug}",
               "createOptions": {}
             }
-          },
-          "PostProcessorFunction": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "${MODULES.PostProcessorFunction.debug}",
-              "createOptions": {}
-            }
           }
         }
       }
