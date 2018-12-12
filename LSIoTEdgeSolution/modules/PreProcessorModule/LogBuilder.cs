@@ -19,10 +19,7 @@ namespace PreProcessorModule
         }
 
           static public void LogWrite(MessageStatus messageStatus, string logMessage)
-        {
-            //WindowPath
-            //string path = @"C:\Users\sena.kim\Documents\Projects\LS산전\Azure_LS_EdgeSolution\LSIoTEdgeSolution\config\";
-            
+        {  
             string path ="/app/documents/";
             try
             {
@@ -64,7 +61,12 @@ namespace PreProcessorModule
 
             return localDate;
         }
-
+          ///<summary>
+        ///* Function:static string function returnsed Parsed Date to passed format "yy/MM/dd
+        ///* @author: Sena.kim
+        ///* @parameter: DATETIME p_datetime, string the format eg: "yy/MM/dd"
+        ///* @return: string
+        ///</summary>
         static public string ParseDateTimeToString(DateTime p_datetime, string p_format)
         {
             string s_date;

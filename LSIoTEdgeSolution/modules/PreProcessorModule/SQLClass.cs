@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
+//using System.Collections.Generic;
+//using System.Text;
+//using Newtonsoft.Json;
 using System.Data.SqlClient;
-using Microsoft.Azure.Devices.Client;
-using System.Threading.Tasks;
+//using Microsoft.Azure.Devices.Client;
+//using System.Threading.Tasks;
 using System.Data;
 
 //dotnet add package System.Data.SqlClient
@@ -19,12 +19,9 @@ namespace PreProcessorModule
         public string m_connectionstring;
         private string m_dbname;
         private string m_tablename;
-        public bool SQLTableExist;
-
         public SQLClass(string connectionstring)
         {
             m_connectionstring = connectionstring;
-            SQLTableExist = false;
         }
         public string GetSqlDbName()
         {
@@ -54,13 +51,17 @@ namespace PreProcessorModule
             }
             return tempState;
         }
-
+        ///<summary>
+        ///* Function: private function to Opening SQL CONNECTION.!-- This is used by many other public functions SetSqlNameAndTable. First.!--  
+        ///* @author: Sena.kim
+        ///* @parameter: NONE
+        ///* @return: ConnectionState
+        ///</summary>
         private ConnectionState OpenSqlConnection()
         {
             ConnectionState temp_connectionState = ConnectionState.Closed;
             using (SqlConnection connection = new SqlConnection())
             {
-
                 connection.ConnectionString = m_connectionstring;
                 connection.Open();
                 temp_connectionState = connection.State;
@@ -69,12 +70,7 @@ namespace PreProcessorModule
             return temp_connectionState;
         }
 
-        ///<summary>
-        ///* Function: static function to Comparing Two DAte Time if reservedworkingdatetime is earlier than the toda's date it will retun reserved working folder else toda'sdate.!-- 
-        ///* @author: Sena.kim
-        ///* @parameter: DATETIME reservedwrokingfolder, DATETIME, toda
-        ///* @return: bool if 
-        ///</summary>
+       /////
         public bool CheckTableNameInSQL(string tablename)
         {
             string temp_CheckTableNameInSQLstring = string.Empty;
@@ -85,9 +81,6 @@ namespace PreProcessorModule
                 temp_CheckTableNameInSQLstring = "select NAME FROM sysobjects where name = '" + tablename + "'";
                 temp_errormessageString = "";
                 temp_isProcessSucceeded = ProcessSQL(temp_CheckTableNameInSQLstring, temp_errormessageString);
-
-
-
             }
             catch
             {
@@ -165,12 +158,11 @@ namespace PreProcessorModule
             {
                 connection.Open();
                 connection.Close();
-                // Do work here; connection closed on following line.  
             }
         }
         private static void ReadSingleRow(IDataRecord record)
         {
-             Console.WriteLine(String.Format(record[0].ToString()));
+            Console.WriteLine(String.Format(record[0].ToString()));
         }
 
         public string ReadSQL(string commandstring)
@@ -191,20 +183,17 @@ namespace PreProcessorModule
                             if (reader.Read())
                             {
                                 tempresult = String.Format(reader[0].ToString());
-                                //ReadSingleRow((IDataRecord)reader);
-                                //  temp_processComplete = true;
                             }
                             reader.Close();
                         }
                     }
                 }
-              
             }
             catch (System.Data.SqlClient.SqlException exception)
             {
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Error, "Error See log for detail : " + exception);
             }
-              return tempresult;
+            return tempresult;
         }
         public bool ProcessSQL(string commandstring, string errormessage)
         {
@@ -263,15 +252,13 @@ namespace PreProcessorModule
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(temp_InsertRawDataToSQLstring, connection))
                     {
-
                         command.ExecuteNonQuery();
                     }
                 }
             }
             catch (System.Data.SqlClient.SqlException exception)
             {
-                LogBuilder.LogWrite(LogBuilder.MessageStatus.Error, "Error See log for detail.");
-                Console.WriteLine("ConnectionString: {0}", exception);
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Error, $"{exception}");
             }
         }
         public void InsertSQL(string commandstring)

@@ -1,20 +1,12 @@
 namespace PostProcessorModule
 {
     using System;
-    //  using System.IO;
-    //  using System.Runtime.InteropServices;
     using System.Runtime.Loader;
-    // using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
-    //using System.Collections.Generic;
-    // using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    //using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
-    // using System.Net;
-    // using System.Diagnostics;
     using Sql = System.Data.SqlClient;
 
     class Program
@@ -78,9 +70,6 @@ namespace PostProcessorModule
             byte[] messageBytes = message.GetBytes();
             string messageString = Encoding.UTF8.GetString(messageBytes);
             char[] Mychar = { '[', ']' };
-            char[] Mychar1 = { '"' };
-            // string  newstring = messageString.TrimStart(Mychar1);
-            // newstring = newstring.TrimEnd(Mychar1);
             string newstring = messageString.Replace("\\", "");
             newstring = newstring.Replace("[\"", "[");
             newstring = newstring.Replace("\"]", "]");
@@ -90,11 +79,10 @@ namespace PostProcessorModule
             Console.WriteLine($"Received message: {counterValue}, Body: {newstring}");
             var messageBody = JsonConvert.DeserializeObject<MessageBody>(newstring);
 
-            //////////////////DO HERE
-            // if condition to check if cep exist and if exist 
-            // -- await
-            //UpdateSQLTable(messageBody.Cep, messageBody.Predicted);
-            ///////////////////////////////
+            if (!string.IsNullOrEmpty(messageBody.Cep))
+            {
+                UpdateSQLTable(messageBody.Cep, messageBody.Predicted);
+            }
 
             MessageBody new_messageBody = new MessageBody
             {
@@ -107,24 +95,30 @@ namespace PostProcessorModule
             messageString = JsonConvert.SerializeObject(new_messageBody);
             Console.WriteLine($"Serialzing : {new_messageBody}");
 
-            if (!string.IsNullOrEmpty(messageString))
+            await SendMessage(messageString, message, moduleClient);           
+            return MessageResponse.Completed;
+        }
+        static async Task<bool> SendMessage(string p_messageString, Message message, ModuleClient p_moduleclient)
+        {
+            bool resultbool = false;
+            if (!string.IsNullOrEmpty(p_messageString))
             {
-                messageBytes = Encoding.UTF8.GetBytes(messageString);
+               var messageBytes = Encoding.UTF8.GetBytes(p_messageString);
 
                 var pipeMessage = new Message(messageBytes);
                 pipeMessage.ContentEncoding = "utf-8";
                 pipeMessage.ContentType = "application/json";
-                foreach (var prop in message.Properties)
+                // foreach (var prop in message.Properties)
+                
+                foreach (var prop in pipeMessage.Properties)
                 {
                     pipeMessage.Properties.Add(prop.Key, prop.Value);
                 }
-                await moduleClient.SendEventAsync("output1", pipeMessage);
-                Console.WriteLine("Received message sent");
+                await p_moduleclient.SendEventAsync("output1", pipeMessage);
+                resultbool = true;
             }
-            return MessageResponse.Completed;
+            return resultbool;
         }
-
-
         static public void UpdateSQLTable(string p_ceplocation, string p_resultValue)
         {
 

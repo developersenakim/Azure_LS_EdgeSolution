@@ -1,22 +1,19 @@
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
+//using System.IO;
+//using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using System.Security.Cryptography.X509Certificates;
+// using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using System.Collections.Generic;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.Azure.Devices.Shared;
+// using System.Collections.Generic;
+// using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+//using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
-using System.Net;
+// using System.Net;
 using System.Diagnostics;
 
-//#pragma warning disable CS4014
-
-//#pragma warning disable CS4014
 namespace PreProcessorModule
 {
     class Program
@@ -43,7 +40,7 @@ namespace PreProcessorModule
 
             if (currentEnvironmet == Environment.productionOnlinux)
             {
-              
+
                 configfile = "/app/documents/config.txt";
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
@@ -61,8 +58,6 @@ namespace PreProcessorModule
             sqlclass = new SQLClass(moduleManager.GetsqlConnectionString());
             sqlclass.CheckSqlConnection();
             CreateDBAndNGTable(sqlclass, currentEnvironmet);
-
-
             ////////////////////////////////////////// Initialization Complete ////////////////////////////
             logmessage = "Initialization complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}"; //local test : {00:00:00:38}
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
@@ -80,12 +75,11 @@ namespace PreProcessorModule
                 {// Write hours, minutes , seconds , milliseconds/.
                     logmessage = "All Process Complete For the First Time : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
                 }
-                else
+                else if (count < 10)
                 {
-                    logmessage = "Process Complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
+                    logmessage = " "+ count+ " Process Complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
                 }
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
-                LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Resetting watch...");
                 stopwatch.Reset();
             }
             // Wait until the app unloads or is cancelled
@@ -116,8 +110,7 @@ namespace PreProcessorModule
         }
 
         static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironment, SQLClass p_sqlclass, ModuleClient p_moduleclient)
-        {            //this is being looped this
-
+        {      
             string tempmessage = "Start Processing Line reports.";
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, tempmessage);
 
@@ -160,7 +153,6 @@ namespace PreProcessorModule
                     }
                 }
             }
-
         }// end of Process void
     }
 }
