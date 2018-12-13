@@ -10,10 +10,10 @@
             "minDockerVersion": "v1.25",
             "loggingOptions": "",
             "registryCredentials": {
-              "processormodule": {
-                "username": "$CONTAINER_REGISTRY_USERNAME_processormodule",
-                "password": "$CONTAINER_REGISTRY_PASSWORD_processormodule",
-                "address": "processormodule.azurecr.io"
+              "iotedgesolution": {
+                "username": "$CONTAINER_REGISTRY_USERNAME_iotedgesolution",
+                "password": "$CONTAINER_REGISTRY_PASSWORD_iotedgesolution",
+                "address": "iotedgesolution.azurecr.io"
               },
               "bespinmlws7750713637": {
                 "username": "$CONTAINER_REGISTRY_USERNAME_bespinmlws7750713637",

@@ -11,8 +11,6 @@ using System.Linq;
 
 namespace PreProcessorModule
 {
-
-
     /// text for class LineStatus
     public class LineStatus
     {

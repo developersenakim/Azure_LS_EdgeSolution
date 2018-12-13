@@ -13,7 +13,7 @@
               "processormodule": {
                 "username": "$CONTAINER_REGISTRY_USERNAME_processormodule",
                 "password": "$CONTAINER_REGISTRY_PASSWORD_processormodule",
-                "address": "processormodule.azurecr.io"
+                "address": "iotedgesolution.azurecr.io"
               }
             }
           }

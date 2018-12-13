@@ -15,8 +15,6 @@ namespace PreProcessorModule
         productionOnlinux,
         testOnWindow, pri
     }
-
-
     public class MessageBody
     {
         [JsonProperty("line")]
@@ -28,7 +26,6 @@ namespace PreProcessorModule
 
         [JsonProperty("predicted")]
         public string Predicted { get; set; }//True False Unkown
-
     }
     public class ModuleMessageBody
     {
@@ -45,8 +42,6 @@ namespace PreProcessorModule
         [JsonProperty("Aps")]
         public string Aps { get; set; }
     }
-
-
     public class DateFolderInfo //: IEquatable<Part>
     {
         public int VerifiyingID;
@@ -58,7 +53,6 @@ namespace PreProcessorModule
         public string APSFolderLocation { get; set; }
         public string CepFolderLocation { get; set; }
         public string RawDataFolderLocation { get; set; }
-
         public bool isProcessingComplete { get; set; }
 
         public override string ToString()
