@@ -8,14 +8,30 @@ namespace PostProcessorModule
     using Microsoft.Azure.Devices.Client;
     using Newtonsoft.Json;
     using Sql = System.Data.SqlClient;
+    using System.Diagnostics;
 
     class Program
     {
         static int counter;
+        private static Stopwatch stopwatch;
+
 
         static void Main(string[] args)
         {
+            stopwatch = new Stopwatch();
+            stopwatch.Start();
             Init().Wait();
+
+             // StopTime
+            if (counter < 5)
+            {
+                stopwatch.Stop();
+                string logmessage = " " + counter + " Process Complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ffff") + "}";
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Important, logmessage);
+                Console.WriteLine(logmessage);
+            }
+            stopwatch.Reset();
+
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -50,7 +66,6 @@ namespace PostProcessorModule
 
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
-
         }
         /// <summary>
         /// This method is called whenever the module is sent a message from the EdgeHub. 
@@ -93,9 +108,9 @@ namespace PostProcessorModule
             };
 
             messageString = JsonConvert.SerializeObject(new_messageBody);
-            Console.WriteLine($"Serialzing : {new_messageBody}");
-
-            await SendMessage(messageString, message, moduleClient);           
+            Console.WriteLine($"Serialzing : {new_messageBody.LineName}, {new_messageBody.Raw}, {new_messageBody.Cep}, {new_messageBody.Predicted}");
+            await SendMessage(messageString, message, moduleClient);
+           
             return MessageResponse.Completed;
         }
         static async Task<bool> SendMessage(string p_messageString, Message message, ModuleClient p_moduleclient)
@@ -103,13 +118,11 @@ namespace PostProcessorModule
             bool resultbool = false;
             if (!string.IsNullOrEmpty(p_messageString))
             {
-               var messageBytes = Encoding.UTF8.GetBytes(p_messageString);
+                var messageBytes = Encoding.UTF8.GetBytes(p_messageString);
 
                 var pipeMessage = new Message(messageBytes);
                 pipeMessage.ContentEncoding = "utf-8";
                 pipeMessage.ContentType = "application/json";
-                // foreach (var prop in message.Properties)
-                
                 foreach (var prop in pipeMessage.Properties)
                 {
                     pipeMessage.Properties.Add(prop.Key, prop.Value);

@@ -54,14 +54,15 @@ namespace PreProcessorModule
 
         public void Clear()
         {
-            m_currentdateFolderInfo.CepFolderLocation = "";
-            m_currentdateFolderInfo.BadProductsToPass.Clear();
-            m_ModuleMessageBody.Clear();
-
+            if (m_ModuleMessageBody != null)
+            {
+                m_ModuleMessageBody.Clear();
+            }
+            if (m_currentdateFolderInfo.BadProductsToPass != null)
+            {
+                m_currentdateFolderInfo.BadProductsToPass.Clear();
+            }
         }
-
-
-
 
         ///<summary>
         ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
@@ -110,12 +111,13 @@ namespace PreProcessorModule
         public bool ProcessSingleDateFolderInfo(Environment p_currentEnvironment)
         {
             bool isThisNewDay = false;
-          //  var comparingDates = 1;
+            //  var comparingDates = 1;
             m_currentdateFolderInfo = SetSingleDateFolderInfo(p_currentEnvironment);
-    
-            if ( m_currentdateFolderInfo.WorkingDate.Date > m_previousworkingDate.Date)//  relationship = "is earlier than";
+
+            if (m_currentdateFolderInfo.WorkingDate.Date > m_previousworkingDate.Date)//  relationship = "is earlier than";
             {
                 m_previousworkingDate = m_currentdateFolderInfo.WorkingDate;
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Accessing : " + m_currentdateFolderInfo.DateFolderLocationUnderReport);
                 isThisNewDay = true;
             }
 
@@ -160,65 +162,10 @@ namespace PreProcessorModule
                 APSFolderLocation = this.GetApsCepRawLocation(m_apsfolderName, RestultFileType.APS, currentworkingDate),
                 CepFolderLocation = this.GetApsCepRawLocation(m_cepfolderName, RestultFileType.CEP, currentworkingDate),
                 RawDataFolderLocation = this.GetApsCepRawLocation(m_rawfolderName, RestultFileType.RAW, currentworkingDate),
-                //BadProductsWithErrors = new Queue<BadProductInfo>(),
                 BadProductsToPass = new Queue<BadProductInfo>(),
                 isProcessingComplete = false,
             });
             return todayDateFolderInfo;
-        }
-        ///<summary>
-        ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
-        /// This function proves that those specific folders exist.!-- 
-        ///* @author: Sena.kim
-        ///* @parameter: fileType ( "*.csv") folder path
-        ///* @return: None 
-        ///</summary>
-        public void SetbadProductsInfoUnderDateFolderUsingSQL(DateFolderInfo p_datefolderInfo)
-        {
-            // if (m_IsThereReportFolder == true && m_IsThereAIFolder == true)
-            // {
-            //     FileInfo[] di = DirectoryReader.Readfromfolder("*.csv", p_datefolderInfo.DateFolderLocationUnderReport);//does directory have csv files? save csv files
-            //     for (int i = 0; i < di.Length; i++)
-            //     {
-            //         if (di[i] != null)
-            //         {
-            //             DataTable csvData = new DataTable();
-            //             try
-            //             {
-            //                 using (TextFieldParser csvReader = new TextFieldParser(csv_file_path))
-            //                 {
-            //                     csvReader.SetDelimiters(new string[] { "," });
-            //                     csvReader.HasFieldsEnclosedInQuotes = true;
-            //                     string[] colFields = csvReader.ReadFields();
-            //                     foreach (string column in colFields)
-            //                     {
-            //                         DataColumn datecolumn = new DataColumn(column);
-            //                         datecolumn.AllowDBNull = true;
-            //                         csvData.Columns.Add(datecolumn);
-            //                     }
-            //                     while (!csvReader.EndOfData)
-            //                     {
-            //                         string[] fieldData = csvReader.ReadFields();
-            //                         //Making empty value as null
-            //                         for (int i = 0; i < fieldData.Length; i++)
-            //                         {
-            //                             if (fieldData[i] == "")
-            //                             {
-            //                                 fieldData[i] = null;
-            //                             }
-            //                         }
-            //                         csvData.Rows.Add(fieldData);
-            //                     }
-            //                 }
-            //             }
-            //             catch (Exception ex)
-            //             {
-            //             }
-            //             return csvData;
-            //         }
-            //     }
-            // }
-
         }
         ///<summary>
         ///* Function: Initialze and assign the Specified share folder location, line name, report and aidata folderlocation 
@@ -237,9 +184,10 @@ namespace PreProcessorModule
 
                 //does directory have csv files? save csv files
                 FileInfo[] di = DirectoryReader.Readfromfolder("*.csv", p_datefolderInfo.DateFolderLocationUnderReport);
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Reading :" + p_datefolderInfo.DateFolderLocationUnderReport);
 
 
-                for (int i = 0; i < di.Length; i++)
+                for (int i = 0; i <= di.Length; i++)
                 {
                     if (di[i] != null)
                     {
@@ -282,9 +230,6 @@ namespace PreProcessorModule
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Folder :" + dateformat + " Total bad products :" + p_datefolderInfo.BadProductsToPass.Count + " DataError :" + dataError.ToString());
 
         }// end of  public SetDecisionResultUnderReportFolder(string p_dateFolderLocation)
-
-
-
         public Queue<ModuleMessageBody> ProcessBadReportsUnderSingleDates(DateFolderInfo p_datefolderInfo)
         {
             if (p_datefolderInfo.BadProductsToPass != null)

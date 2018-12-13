@@ -7,7 +7,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace PreProcessorModule
+namespace PostProcessorModule
 {
     public class LogBuilder
     {
@@ -17,7 +17,7 @@ namespace PreProcessorModule
             Warning,
             Error,
 
-            Important
+            Important,
         }
 
         static public void LogWrite(MessageStatus messageStatus, string logMessage)
@@ -25,7 +25,7 @@ namespace PreProcessorModule
             string path = "/app/documents/";
             try
             {
-                using (StreamWriter w = File.AppendText(path + "log.txt"))
+                using (StreamWriter w = File.AppendText(path + "PostProcessorlog.txt"))
                 {
                     WriteOnConsole(logMessage, messageStatus, w);
                 }
@@ -185,40 +185,11 @@ namespace PreProcessorModule
                     WriteWarningMessage("Error :" + message);
                     //  Log(messageToWrite, w, "# Warning Log : ");
                     return messageToWrite;
-                case MessageStatus.Important:
-                    WriteWarningMessage("Important :" + message);
-                    //  Log(messageToWrite, w, "# Warning Log : ");
-                    return messageToWrite;
 
                 default:
                     return messageToWrite;
             }
         }
-        public static MessageBody AssignTempMessageBody(string p_linename, string p_raw, string p_cep)
-        {
-            var messageBody = new MessageBody
-            {
-                LineName = p_linename,
-                Raw = p_raw,
-                Cep = p_cep
-                //     Predicted = "NG"
-
-            };
-            return messageBody;
-
-        }
-        public static MessageBody AssignTempMessageBody(string message)
-        {
-            var messageBody = new MessageBody
-            {
-                LineName = "MC3LINE",
-                Raw = "/app/data/data/P0104087054960BW0301_00013440049_2018-07-20-08-28-10_Raw.csv",
-                Cep = "/app/data/data/P0104087054960BW0301_00013440049_2018-07-20-08-28-10_Cep.csv",
-
-            };
-            return messageBody;
-        }
-
         static private void WriteErrorMessage(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;

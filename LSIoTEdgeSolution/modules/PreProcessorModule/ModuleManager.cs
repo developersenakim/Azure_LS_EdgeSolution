@@ -32,6 +32,7 @@ namespace PreProcessorModule
             {
                 m_Linestatus[i].Clear();
             }// end of for 
+             m_totalMessageBodiesOfAllLines = new Queue<ModuleMessageBody>();
         }
 
 

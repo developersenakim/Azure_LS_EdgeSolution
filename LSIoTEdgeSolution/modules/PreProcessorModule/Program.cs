@@ -30,7 +30,6 @@ namespace PreProcessorModule
             SQLClass sqlclass = null;
             Environment currentEnvironmet = Environment.productionOnlinux;
 
-
             int count = 0;
             string logmessage = string.Empty;
             currentEnvironmet = Environment.productionOnlinux;
@@ -40,12 +39,9 @@ namespace PreProcessorModule
 
             if (currentEnvironmet == Environment.productionOnlinux)
             {
-
                 configfile = "/app/documents/config.txt";
                 moduleclient = ConnectionManager.Init().Result;
                 moduleManager = new ModuleManager("/app/documents/config.txt");
-
-
             }
             else if (currentEnvironmet == Environment.testOnWindow)
             {
@@ -64,11 +60,12 @@ namespace PreProcessorModule
 
             while (repeat == true)//count < 1)//true
             {
+                ////////////////////////////////////////// Process Complete ////////////////////////////
+                moduleManager.Clear();
+
                 count++;
                 Process(moduleManager, currentEnvironmet, sqlclass, moduleclient);
 
-                ////////////////////////////////////////// Process Complete ////////////////////////////
-                moduleManager.Clear();
                 sqlclass.CloseSQL();// only print messages that contains raw cep aps
                 stopwatch.Stop();  // Stop
                 if (count == 1)
@@ -77,7 +74,7 @@ namespace PreProcessorModule
                 }
                 else if (count < 10)
                 {
-                    logmessage = " "+ count+ " Process Complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
+                    logmessage = " " + count + " Process Complete : Time elapsed: {" + stopwatch.Elapsed.ToString("hh\\:mm\\:ss\\:ff") + "}";  // Write hours, minutes , seconds , milliseconds/.
                 }
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logmessage);
                 stopwatch.Reset();
@@ -110,7 +107,7 @@ namespace PreProcessorModule
         }
 
         static void Process(ModuleManager p_moduleManager, Environment p_currentEnvironment, SQLClass p_sqlclass, ModuleClient p_moduleclient)
-        {      
+        {
             string tempmessage = "Start Processing Line reports.";
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, tempmessage);
 

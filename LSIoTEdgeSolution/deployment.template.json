@@ -61,7 +61,7 @@
             }
           }
         },
-        "modules": {
+        "modules": {          
           "machinelearningmodule": {
             "type": "docker",
             "settings": {
