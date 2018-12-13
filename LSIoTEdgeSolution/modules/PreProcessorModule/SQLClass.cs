@@ -191,7 +191,7 @@ namespace PreProcessorModule
             }
             catch (System.Data.SqlClient.SqlException exception)
             {
-                LogBuilder.LogWrite(LogBuilder.MessageStatus.Error, "Error See log for detail : " + exception);
+                LogBuilder.LogWrite(LogBuilder.MessageStatus.Error, "RedingSQL : " + exception);
             }
             return tempresult;
         }

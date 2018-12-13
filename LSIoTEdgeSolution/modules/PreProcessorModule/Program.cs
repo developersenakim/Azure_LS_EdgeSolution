@@ -32,7 +32,6 @@ namespace PreProcessorModule
 
             int count = 0;
             string logmessage = string.Empty;
-            currentEnvironmet = Environment.productionOnlinux;
             moduleManager = new ModuleManager("");
             string configfile = "";
             bool repeat = true;
@@ -115,8 +114,9 @@ namespace PreProcessorModule
             p_moduleManager.m_totalMessageBodiesOfAllLines.TrimExcess();
             int tempMax = p_moduleManager.m_totalMessageBodiesOfAllLines.Count;
             int count = 0;
-            foreach (var temp in p_moduleManager.m_totalMessageBodiesOfAllLines)
+            for (int i = 0; i < tempMax; i++)
             {
+                var temp = p_moduleManager.m_totalMessageBodiesOfAllLines[i];                            
                 count++;
                 var messageBody = LogBuilder.AssignTempMessageBody(temp.LineName, temp.Raw, temp.Cep);
                 var messageString = JsonConvert.SerializeObject(messageBody);
@@ -127,16 +127,6 @@ namespace PreProcessorModule
 
                 if (p_sqlclass.ReadSQL($"SELECT COUNT([BarCode]) AS ISEIXSTS FROM [LS_IoTEDGE].[dbo].[T_NG]	WHERE [BarCode] = '{ temp.BadProductInfo.BarCode}'	;") == "0")
                 {
-                    Random _r = new Random();
-                    int a = _r.Next(2);
-                    if (a == 0)
-                    {
-                        temp.BadProductInfo.Result = "NG";
-                    }
-                    else if (a == 1)
-                    {
-                        temp.BadProductInfo.Result = "OK";
-                    }
                     //Chek if the data already exist 
                     p_sqlclass.InsertTableInSQL(temp.LineName, temp.BadProductInfo.Date, temp.BadProductInfo.Model, temp.BadProductInfo.BarCode, temp.BadProductInfo.Result, temp.Raw, temp.Cep, temp.Aps);
 

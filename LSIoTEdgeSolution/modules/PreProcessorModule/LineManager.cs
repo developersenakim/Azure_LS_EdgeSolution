@@ -42,7 +42,7 @@ namespace PreProcessorModule
         public DateTime m_previousworkingDate { get; set; } // AI folder location
         public DateFolderInfo m_currentdateFolderInfo { get; set; }
         //  public Queue<BadProductInfo> m_badProductsInfo { get; set; }
-        public Queue<ModuleMessageBody> m_ModuleMessageBody { get; set; }
+        public List<ModuleMessageBody> m_ModuleMessageBody { get; set; }
 
         public Environment m_currentEnvironment;
         public enum RestultFileType
@@ -58,10 +58,13 @@ namespace PreProcessorModule
             {
                 m_ModuleMessageBody.Clear();
             }
+            m_ModuleMessageBody = new List<ModuleMessageBody>();
+            
             if (m_currentdateFolderInfo.BadProductsToPass != null)
             {
                 m_currentdateFolderInfo.BadProductsToPass.Clear();
             }
+              m_currentdateFolderInfo.BadProductsToPass = new Queue<BadProductInfo>();
         }
 
         ///<summary>
@@ -73,7 +76,7 @@ namespace PreProcessorModule
         ///</summary>
         public int AssignLineStatus(string p_shareFolderLocation, string p_directoryName, int i, string p_reportfolderName, string p_aifolderName)
         {
-            int Linenumber = i + 2;
+            int Linenumber = i + 1;
             m_LineName = "MC" + Linenumber + "LINE";
             // m_LineName = p_directoryName;
             //reset variales, 
@@ -81,7 +84,7 @@ namespace PreProcessorModule
 
             m_reportfolderlocation = m_linefolderLocation + p_reportfolderName;//"/report";
             m_aidatafolderlocation = m_linefolderLocation + p_aifolderName;//'"/aidata";
-            m_ModuleMessageBody = new Queue<ModuleMessageBody>();
+            m_ModuleMessageBody = new List<ModuleMessageBody>();
             m_currentdateFolderInfo = new DateFolderInfo();
             m_IsThereLineFolder = DirectoryReader.IsDirectoryExistInThefolder(m_linefolderLocation);
             if (m_IsThereLineFolder == true)
@@ -177,17 +180,15 @@ namespace PreProcessorModule
         public void SetbadProductsInfoUnderDateFolder(DateFolderInfo p_datefolderInfo)
         {
             int dataError = 0;
-
-
             if (m_IsThereReportFolder == true && m_IsThereAIFolder == true)
-            {
-
+            { 
+                p_datefolderInfo.BadProductsToPass = new Queue<BadProductInfo>();
                 //does directory have csv files? save csv files
                 FileInfo[] di = DirectoryReader.Readfromfolder("*.csv", p_datefolderInfo.DateFolderLocationUnderReport);
                 LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Reading :" + p_datefolderInfo.DateFolderLocationUnderReport);
+                
 
-
-                for (int i = 0; i <= di.Length; i++)
+                for (int i = 0; i < di.Length; i++)
                 {
                     if (di[i] != null)
                     {
@@ -222,7 +223,6 @@ namespace PreProcessorModule
                         // m_badProductsInfo.TrimExcess();
                         LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Reading " + p_datefolderInfo.WorkingDate + " " + di[i].Name + "....." + "No. of BadProducts #" + badcount);
                     }
-
                 }// end of for loop
             } // end of  if (IsThereReportFolder == true && IsThereAIFolder == true)Z         
 
@@ -230,14 +230,14 @@ namespace PreProcessorModule
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "Folder :" + dateformat + " Total bad products :" + p_datefolderInfo.BadProductsToPass.Count + " DataError :" + dataError.ToString());
 
         }// end of  public SetDecisionResultUnderReportFolder(string p_dateFolderLocation)
-        public Queue<ModuleMessageBody> ProcessBadReportsUnderSingleDates(DateFolderInfo p_datefolderInfo)
+        public List<ModuleMessageBody> ProcessBadReportsUnderSingleDates(DateFolderInfo p_datefolderInfo)
         {
             if (p_datefolderInfo.BadProductsToPass != null)
             {
                 p_datefolderInfo.BadProductsToPass.TrimExcess();
                 int tempmax = p_datefolderInfo.BadProductsToPass.Count;
                 for (int i = 0; i < tempmax; i++)
-                {
+                { 
                     BadProductInfo singlebadInfo = p_datefolderInfo.BadProductsToPass.Dequeue();
                     p_datefolderInfo.BadProductsToPass.TrimExcess();
                     string fileApsstring = "", fileCepstring = "", fileRawstring = "";
@@ -258,7 +258,7 @@ namespace PreProcessorModule
                         fileRawstring = rawFi[0].ToString();
                     }
 
-                    m_ModuleMessageBody.Enqueue(new ModuleMessageBody()
+                    m_ModuleMessageBody.Add(new ModuleMessageBody()
                     {
                         LineName = m_LineName,
                         BadProductInfo = (new BadProductInfo()

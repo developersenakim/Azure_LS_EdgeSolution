@@ -12,7 +12,7 @@ namespace PreProcessorModule
         private int m_numberOfLines;
         public LineStatus[] m_Linestatus { get; set; }
 
-        public Queue<ModuleMessageBody> m_totalMessageBodiesOfAllLines { get; set; }
+        public List<ModuleMessageBody> m_totalMessageBodiesOfAllLines { get; set; }
 
         public ModuleManager(string configPath)
         {
@@ -21,7 +21,7 @@ namespace PreProcessorModule
             m_shareFolderLocation = "";
             m_logPath = "";
             m_numberOfLines = 0;
-            m_totalMessageBodiesOfAllLines = new Queue<ModuleMessageBody>();
+            m_totalMessageBodiesOfAllLines = new List<ModuleMessageBody>();
 
         }
 
@@ -32,7 +32,7 @@ namespace PreProcessorModule
             {
                 m_Linestatus[i].Clear();
             }// end of for 
-             m_totalMessageBodiesOfAllLines = new Queue<ModuleMessageBody>();
+             m_totalMessageBodiesOfAllLines = new List<ModuleMessageBody>();
         }
 
 
@@ -101,7 +101,7 @@ namespace PreProcessorModule
                 m_Linestatus[i].m_ModuleMessageBody.TrimExcess();
                 foreach (var messageStructure in m_Linestatus[i].m_ModuleMessageBody)
                 {
-                    m_totalMessageBodiesOfAllLines.Enqueue(messageStructure);
+                    m_totalMessageBodiesOfAllLines.Add(messageStructure);
                 }
             }// end of for       
         }
