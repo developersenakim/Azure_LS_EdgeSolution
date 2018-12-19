@@ -2,7 +2,7 @@
     "$schema-version": "0.0.1",
     "description": "",
     "image": {
-        "repository": "processormodule.azurecr.io/preprocessormodule",
+        "repository": "iotmcmessagesender.azurecr.io/preprocessormodule",
         "tag": {
             "version": "0.0.1",
             "platforms": {

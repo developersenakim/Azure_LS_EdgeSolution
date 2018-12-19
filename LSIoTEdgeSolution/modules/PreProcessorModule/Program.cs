@@ -35,8 +35,6 @@ namespace PreProcessorModule
             moduleManager = new ModuleManager();
             moduleManager.Init();
 
-
-
             Init().Wait();
 
             // Wait until the app unloads or is cancelled
@@ -68,7 +66,7 @@ namespace PreProcessorModule
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
             await ioTHubModuleClient.OpenAsync();
-            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual,"IoT Hub module client initialized.");
+            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, "IoT Hub module client initialized.");
 
             var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
             var moduleTwinCollection = moduleTwin.Properties.Desired;
@@ -82,36 +80,21 @@ namespace PreProcessorModule
             {
                 try
                 {
-                    counter++;
-                    if (counter == 1)
+
+                    var messageBody = LogBuilder.AssignTempMessageBody("");
+                    var messageString = JsonConvert.SerializeObject(messageBody);
+
+                    if (messageString != string.Empty)
                     {
-                        // first time execution needs to reset the data factory
-                        // IsReset = true;
-                    }
-                    moduleManager.Process();
-                    string Modulemessage = moduleManager.m_ModuleMessageBody.Count + "number of module messagebody";
-                    LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, Modulemessage);
+                        var logstring = "@@@@@@@@@" + messageString + "";
+                        LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logstring);
+                        var messageBytes = Encoding.UTF8.GetBytes(messageString);
+                        var message = new Message(messageBytes);
+                        message.ContentEncoding = "utf-8";
+                        message.ContentType = "application/json";
 
-                    if (moduleManager.m_ModuleMessageBody.Count > 0)
-                    {
-                        moduleManager.m_ModuleMessageBody.TrimExcess();
-                        ModuleMessageBody moduleMessageBody = moduleManager.m_ModuleMessageBody.Dequeue();
+                        await deviceClient.SendEventAsync("messageOutput", message);
 
-                        var messageBody = LogBuilder.AssignTempMessageBody(moduleMessageBody.LineName, moduleMessageBody.Raw, moduleMessageBody.Cep);
-                        var messageString = JsonConvert.SerializeObject(messageBody);
-
-                        if (messageString != string.Empty)
-                        {
-                            var logstring = "@@@@@@@@@" + messageString + "";
-                            LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, logstring);
-                            var messageBytes = Encoding.UTF8.GetBytes(messageString);
-                            var message = new Message(messageBytes);
-                            message.ContentEncoding = "utf-8";
-                            message.ContentType = "application/json";
-
-                            await deviceClient.SendEventAsync("messageOutput", message);
-
-                        }
                     }
                 }
                 catch (Exception ex)

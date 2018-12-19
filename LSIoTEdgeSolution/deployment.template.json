@@ -11,9 +11,9 @@
             "loggingOptions": "",
             "registryCredentials": {
               "processormodule": {
-                "username": "$CONTAINER_REGISTRY_USERNAME_processormodule",
-                "password": "$CONTAINER_REGISTRY_PASSWORD_processormodule",
-                "address": "processormodule.azurecr.io"
+                "username": "$CONTAINER_REGISTRY_USERNAME_iotmcmessagesender",
+                "password": "$CONTAINER_REGISTRY_PASSWORD_iotmcmessagesender",
+                "address": "iotmcmessagesender.azurecr.io"
               }
             }
           }
@@ -56,17 +56,7 @@
             }
           }
         },
-        "modules": {
-          "sql": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
-              "createOptions": {}
-            }
-          },
+        "modules": {          
           "PreProcessorModule": {
             "version": "1.0",
             "type": "docker",
@@ -84,8 +74,7 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO $upstream",
-          "sensorToPreProcessorModule": "FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/PreProcessorModule/inputs/input1\")"
+          "PreProcessorModuleToIoTHub": "FROM /messages/modules/PreProcessorModule/outputs/messageOutput INTO $upstream"         
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
