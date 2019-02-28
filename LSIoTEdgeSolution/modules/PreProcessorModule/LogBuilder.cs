@@ -20,7 +20,8 @@ namespace PreProcessorModule
 
           static public void LogWrite(MessageStatus messageStatus, string logMessage)
         {  
-            string path ="/app/documents/";
+            string path = "C:\\Users\\seongeun.son\\Documents\\Azure_LS_EdgeSolution\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config";
+            //string path ="/app/documents/";
             try
             {
                 using (StreamWriter w = File.AppendText(path+"log.txt"))
@@ -152,7 +153,7 @@ namespace PreProcessorModule
                 txtWriter.Write("\r\n" + logType);
                 txtWriter.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
                 DateTime.Now.ToLongDateString());
-                // txtWriter.WriteLine("  :");
+                txtWriter.WriteLine("  :");
                 txtWriter.WriteLine("  :{0}", logMessage);
                 txtWriter.WriteLine("-------------------------------");
             }
@@ -171,7 +172,7 @@ namespace PreProcessorModule
                 case MessageStatus.Usual:
 
                     WriteMessage(message);
-                   // Log(messageToWrite, w, "# Usual Log : ");
+                    Log(messageToWrite, w, "# Usual Log : ");
                     return messageToWrite;
 
                 case MessageStatus.Error:
@@ -181,7 +182,7 @@ namespace PreProcessorModule
 
                 case MessageStatus.Warning:
                     WriteWarningMessage("Error :" + message);
-                  //  Log(messageToWrite, w, "# Warning Log : ");
+                    Log(messageToWrite, w, "# Warning Log : ");
                     return messageToWrite;
 
                 default:

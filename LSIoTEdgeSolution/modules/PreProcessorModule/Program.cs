@@ -33,7 +33,7 @@ namespace PreProcessorModule
 
             int count = 0;
             string logmessage = string.Empty;
-            currentEnvironmet = Environment.productionOnlinux;
+            currentEnvironmet = Environment.testOnWindow;
             moduleManager = new ModuleManager("");
             string configfile = "";
             bool repeat = true;
@@ -49,8 +49,8 @@ namespace PreProcessorModule
             }
             else if (currentEnvironmet == Environment.testOnWindow)
             {
-                configfile = "C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt";
-                moduleManager = new ModuleManager("C:\\Users\\sena.kim\\Documents\\Projects\\LS산전\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt");
+                configfile = "C:\\Users\\seongeun.son\\Documents\\Azure_LS_EdgeSolution\\Azure_LS_EdgeSolution\\LSIoTEdgeSolution\\config\\config.txt";
+                moduleManager = new ModuleManager(configfile);
             }
             moduleManager.Init();
             LogBuilder.LogWrite(LogBuilder.MessageStatus.Usual, configfile);
